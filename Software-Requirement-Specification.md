@@ -58,5 +58,5 @@ The Aptitude Assessment Tool will feature a user-friendly interface for students
 
 ## 5. Conclusion
 
-The Aptitude Assessment Tool will provide a comprehensive platform for students to enhance their aptitude skills through interactive assessments while enabling teachers to create and manage assignments effectively. By adhering to the outlined requirements, the system will facilitate a seamless user experience for both students and teachers.
+The Aptitude Assessment Tool will provide a comprehensive platform for students to enhance their aptitude skills through interactive assessments, enabling teachers to create and manage assignments effectively. The system will facilitate a seamless user experience for students and teachers by adhering to the outlined requirements.
 
