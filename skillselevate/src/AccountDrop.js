@@ -40,6 +40,7 @@ const ProfileImg = styled.img`
   width: 60px;
   margin-left: 180px;
   margin-bottom:20px;
+  cursor: pointer;
   @media (max-width: 991px) {
     width: 40px;
     margin-left: 119px;

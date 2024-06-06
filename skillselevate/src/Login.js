@@ -207,7 +207,8 @@ function LoginOverlay({ onClose }) {
                 <SocialLabel>Continue with LinkedIn</SocialLabel>
               </SocialButton>
               <InfoText>Don't have an account? 
-                <a href={onClose}> Signup</a>
+              {/* eslint-disable-next-line */}
+                <a onClick={onClose}> Signup</a>
               </InfoText>
             </div>
           </Card>

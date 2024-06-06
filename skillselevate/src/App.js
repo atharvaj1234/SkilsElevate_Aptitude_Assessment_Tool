@@ -5,7 +5,6 @@ import Dashboard from './Dashboard';
 import TestPage from './Test';
 import Practice from './Practice';
 
-
 function App() {
   return (
     <Router>

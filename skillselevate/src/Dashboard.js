@@ -34,14 +34,6 @@ function TestInfo({
 function Dashboard() {
     const [showDrop, setShowDrop] = useState(false);
 
-    const handleCloseOutsideClick = (event) => {
-      if (event.target === event.currentTarget) {
-        setShowDrop(false);
-      }
-    };
-    
-
-
   const testInfos = [
     {
       title: "Test 1",
@@ -111,7 +103,10 @@ function Dashboard() {
       </HeaderBar>
       {showDrop && <AccountDrop onClose={() => setShowDrop(false)}/>}
       <Tests>
+        <Subheading>
+          <DropFilter>Select Category ▼</DropFilter>
         <SectionTitle>Evaluate Your Skills!</SectionTitle>
+        </Subheading>
         <TestGridContainer>
           <TestGrid>
            
@@ -165,6 +160,26 @@ function Dashboard() {
   );
 }
 
+const Subheading = styled.div`
+display: flex;
+flex-direction: row-reverse;
+justify-content:space-between;
+align-items:center;
+width: 100%;
+`;
+
+const DropFilter = styled.div`
+font-familiy: poppins;
+display:flex;
+height: 40px;
+width: 140px;
+border-radius: 20px;
+border: 2px solid #6A5AE0;
+color: #6A5AE0;
+align-items:center;
+justify-content: center;
+`;
+
 const Circle = styled.img`
   aspect-ratio: 1;
   object-fit: auto;
@@ -199,6 +214,7 @@ const Cube = styled.img`
 const ProfileImg = styled.img`
   margin-right: 30px;
   width: 60px;
+  cursor: pointer;
   @media (max-width: 991px) {
     width: 40px;
     margin-right: 10px;
@@ -380,6 +396,7 @@ const StartButton = styled.button`
   align-self: center;
   justify-content: center;
   margin-top: 40px;
+  cursor: pointer;
   @media (max-width: 991px) {
     margin-top: 40px;
   }
@@ -488,6 +505,7 @@ const PracticeButton = styled.button`
   align-self: center;
   justify-content: center;
   margin-top: auto;
+  cursor: pointer;
   @media (max-width: 991px) {
     margin-top: 20px;
     margin-bottom: 20px;
@@ -560,6 +578,7 @@ const StatsButton = styled.button`
   align-self: center;
   justify-content: center;
   margin-top: auto;
+  cursor: pointer;
   @media (max-width: 991px) {
     margin-top: 40px;
     margin-bottom: 20px;

@@ -3,6 +3,7 @@ import styled from "styled-components";
 import LoginOverlay from './Login'; // Ensure this is imported correctly
 
 
+
 const SignupForm = styled.div`
   background-color: transparent;
   display: flex;
@@ -236,7 +237,8 @@ function Signup({ onClose }) {
                     <SocialLabel>Continue with LinkedIn</SocialLabel>
                   </SocialButton>
                   <InfoText>Already have an account? 
-                    <a href={toggleComponent}> Login</a>
+                    {/* eslint-disable-next-line */}
+                    <a onClick={toggleComponent}> Login</a>
                   </InfoText>
                 </div>
               </Card>
