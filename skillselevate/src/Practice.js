@@ -4,7 +4,7 @@ import styled from "styled-components";
 import CircularProgress from "@mui/material/CircularProgress";
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const API_KEY = `${process.env.REACT_APP_GEN_AI_API_KEY}`;
+const API_KEY = process.env.REACT_APP_GEN_AI_API_KEY;
 const genAI = new GoogleGenerativeAI(API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
