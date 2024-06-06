@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 
+let attemptedOptions;
 const questions = [
   {
     id: 1,
-    prompt: "Q1. PREDICT THE TOP LOSER (for tomorrow) across these indices",
+    prompt: "Q1. Lorem Ipsum this is Question One",
     options: [
       { label: "A", text: "Option 1" },
       { label: "B", text: "Option 2" },
@@ -14,7 +15,7 @@ const questions = [
   },
   {
     id: 2,
-    prompt: "Q2. PREDICT THE TOP LOSER (for tomorrow) across these indices",
+    prompt: "Q2. Lorem Ipsum this is Question Two",
     options: [
       { label: "A", text: "Option 1" },
       { label: "B", text: "Option 2" },
@@ -24,7 +25,7 @@ const questions = [
   },
   {
     id: 3,
-    prompt: "Q3. PREDICT THE TOP LOSER (for tomorrow) across these indices",
+    prompt: "Q3. Lorem Ipsum this is Question Three",
     options: [
       { label: "A", text: "Option 1" },
       { label: "B", text: "Option 2" },
@@ -34,36 +35,60 @@ const questions = [
   },
 ];
 
-
 function QuizComponent() {
+  useEffect(() => {
+    startTimer(); 
+    // eslint-disable-next-line
+  }, []);
+
   const [pro, setPro] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0);
   const [selectedOption, setSelectedOption] = React.useState(null);
-  const [answers, setAnswers] = React.useState(Array(questions.length).fill(null));
+  const [answers, setAnswers] = React.useState(
+    Array(questions.length).fill(null)
+  );
 
-  const correctAnswers = ['A', 'B', 'C']; // Example correct answers
+  const correctAnswers = ["A", "B", "C"]; // Example correct answers
 
   const checkAnswers = () => {
-    const results = answers.map((answer, index) => answer === correctAnswers[index]);
-    console.log(results); // Output: [true, false, true], etc.
+    const results = answers.map(
+      (answer, index) => answer === correctAnswers[index]
+    );
+    console.log(results);
   };
-
 
   const handleOptionClick = (option) => {
     setSelectedOption(option);
     const updatedAnswers = [...answers];
     updatedAnswers[currentQuestionIndex] = option.label;
     setAnswers(updatedAnswers);
+    setPro((prevPro) => prevPro + (1 / questions.length) * 100);
+    attemptedOptions++;
   };
 
-  const handleContinueClick = () => {
+  const handleNextClick = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedOption(null); // Reset selection for the next question
-      setPro((prevPro) => prevPro + (1 / (questions.length))*100); 
+      const lastSelectedOption = answers[currentQuestionIndex + 1];
+      if (lastSelectedOption) {
+        setSelectedOption({ label: lastSelectedOption });
+      } else {
+        setSelectedOption(null);
+      }
     } else {
       console.log("All questions completed");
       checkAnswers();
+    }
+  };
+
+  const handlePreviousClick = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      // Check if there's a previously saved selected option
+      const lastSelectedOption = answers[currentQuestionIndex - 1];
+      if (lastSelectedOption) {
+        setSelectedOption({ label: lastSelectedOption });
+      }
     }
   };
 
@@ -73,24 +98,60 @@ function QuizComponent() {
 
   const isContinueDisabled = selectedOption === null;
 
+  //====================================================================================================================
+
+  // Retrieve the previous timer value from localStorage
+  let timeLimit = 2700; // 45 minute
+
+  function startTimer() {
+    const timerElement = document.getElementById("timer");
+    let timer = setInterval(function () {
+      const minutes = Math.floor(timeLimit / 60);
+      const seconds = timeLimit % 60;
+
+      timerElement.textContent = `🕜 ${minutes}:${
+        seconds < 10 ? "0" : ""
+      }${seconds}`;
+
+      if (timeLimit <= 0) {
+        clearInterval(timer);
+        // Handle time's up, e.g., auto-submit or log out
+        alert("Time's up!");
+        // Redirect or log out the user
+      }
+
+      timeLimit--;
+    }, 1000);
+  }
+
+  // Warning Setups
+
+  //====================================================================================================================
+
   return (
     <MainContainer>
-      <Circle loading="lazy" src="https://cdn.builder.io/api/v1/image/assets/TEMP/fc1353b406cdc5577bcbd645528cc7cc9e348b0c8058cb65d083795bdd79ab29?apiKey=9fbb9e9d71d845eab2e7b2195d716278&" alt="First image" />
-      <Cube loading="lazy" src="https://cdn.builder.io/api/v1/image/assets/TEMP/e8afa8948546c2c3fbfc70dd781a98cc5945478848c882ac206981811937afcc?apiKey=9fbb9e9d71d845eab2e7b2195d716278&" alt="Second image" />
+      <Circle
+        loading="lazy"
+        src="https://cdn.builder.io/api/v1/image/assets/TEMP/fc1353b406cdc5577bcbd645528cc7cc9e348b0c8058cb65d083795bdd79ab29?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+        alt="First image"
+      />
+      <Cube
+        loading="lazy"
+        src="https://cdn.builder.io/api/v1/image/assets/TEMP/e8afa8948546c2c3fbfc70dd781a98cc5945478848c882ac206981811937afcc?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+        alt="Second image"
+      />
       <MainSection>
         <Header>
-          <StreakHeader>Streak</StreakHeader>
-          <SubHeader>Practice Skills</SubHeader>
+          <Timer id="timer">🕜 </Timer>
+          <SubHeader>Test</SubHeader>
           <Exitbtn>X</Exitbtn>
         </Header>
         <QuizSection>
-          <QuizPrompt>
-            {questions[currentQuestionIndex].prompt}
-          </QuizPrompt>
+          <QuizPrompt>{questions[currentQuestionIndex].prompt}</QuizPrompt>
           {questions[currentQuestionIndex].options.map((option, index) => (
-            <Option 
-              key={index} 
-              className={isOptionSelected(option)? 'selected' : ''}
+            <Option
+              key={index}
+              className={isOptionSelected(option) ? "selected" : ""}
               onClick={() => handleOptionClick(option)}
             >
               <OptionLabel>{option.label}</OptionLabel>
@@ -99,18 +160,26 @@ function QuizComponent() {
           ))}
         </QuizSection>
         <Navigation>
-          <ProgressHolder>
-          <Wrapper>
-            <Progress progress={pro}></Progress>
-          </Wrapper>
-          <Progresstext>{currentQuestionIndex}/{questions.length}</Progresstext>
-          </ProgressHolder>
-          <NavButton 
-            onClick={handleContinueClick} 
-            disabled={isContinueDisabled}
-            className={isContinueDisabled ? 'disabled' : 'enabled'}
+          <NavButton
+            onClick={handlePreviousClick}
+            className={currentQuestionIndex === 0 ? "disabled" : "enabled"}
           >
-            {currentQuestionIndex < questions.length - 1 ? 'NEXT' : 'FINISH'}
+            {"PREVIOUS"}
+          </NavButton>
+          <ProgressHolder>
+            <Wrapper>
+              <Progress progress={pro}></Progress>
+            </Wrapper>
+            <Progresstext>
+              {attemptedOptions}/{questions.length}
+            </Progresstext>
+          </ProgressHolder>
+          <NavButton
+            onClick={handleNextClick}
+            disabled={isContinueDisabled}
+            className={isContinueDisabled ? "disabled" : "enabled"}
+          >
+            {currentQuestionIndex < questions.length - 1 ? "NEXT" : "FINISH"}
           </NavButton>
         </Navigation>
       </MainSection>
@@ -118,33 +187,32 @@ function QuizComponent() {
   );
 }
 
-
 const ProgressHolder = styled.div`
-display: flex;
-flex-direction: row;
-align-items:center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 `;
 
 const Progresstext = styled.span`
-font-familiy: 'Poppins';
-font-size: 18px;
-padding: 0 10px;
+  font-familiy: "Poppins";
+  font-size: 18px;
+  padding: 0 10px;
 `;
 
 const Wrapper = styled.div`
-width: 200px;
-height: 15px;
-background-color:lightgrey;
-border-radius: 7px;
+  width: 200px;
+  height: 15px;
+  background-color: lightgrey;
+  border-radius: 7px;
 `;
 
 const Progress = styled.div`
-height: 15px;
-border-radius: 7px;
-background-color: #00C940;
-border-color: white;
-border-width:2px;
-width: ${(props) => `${props.progress}%`}
+  height: 15px;
+  border-radius: 7px;
+  background-color: #00c940;
+  border-color: white;
+  border-width: 2px;
+  width: ${(props) => `${props.progress}%`};
 `;
 
 const Circle = styled.img`
@@ -185,7 +253,7 @@ const MainContainer = styled.div`
 
 const MainSection = styled.div`
   display: flex;
-  z-index:1;
+  z-index: 1;
   flex-direction: column;
   width: 100%;
   align-items: center;
@@ -203,17 +271,17 @@ const Header = styled.header`
   align-items: center;
 `;
 
-const StreakHeader = styled.h2`
+const Timer = styled.h2`
   background-color: #8475ef;
   color: #fff;
   padding: 11px 18px;
   border-radius: 6px;
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1;
   white-space: nowrap;
   @media (max-width: 991px) {
     white-space: initial;
-    font-size: 15px;
+    font-size: 14px;
   }
 `;
 
@@ -290,7 +358,7 @@ const Option = styled.div`
   width: 90%;
   cursor: pointer;
   &:hover {
-    border-color:#fff;
+    border-color: #fff;
   }
   &.selected {
     border: 2px solid blue;
@@ -325,7 +393,7 @@ const OptionText = styled.div`
   @media (max-width: 991px) {
     white-space: initial;
     font-size: 14px;
-  } 
+  }
 `;
 
 const Navigation = styled.nav`
@@ -349,7 +417,7 @@ const NavButton = styled.button`
     white-space: initial;
   }
   &:first-child {
-    background: #432AF8;
+    background: #432af8;
     color: #ede8e2;
     border: 1px solid #cdcbf3;
   }
@@ -363,7 +431,7 @@ const NavButton = styled.button`
     pointer-events: none;
   }
   &.enabled {
-    background: #432AF8;
+    background: #432af8;
     pointer-events: auto;
   }
 `;

@@ -1,14 +1,29 @@
-// eslint-disable-line react-hooks/exhaustive-deps
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import CircularProgress from "@mui/material/CircularProgress";
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const API_KEY = process.env.REACT_APP_GEN_AI_API_KEY;
+let API_KEY = process.env.REACT_APP_GEN_AI_API_KEY; 
 const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-const categories = [
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+let answerFlag;
+const questions = [
+  {
+    id: 1,
+    prompt: "",
+    options: [
+      { label: "A", text: "" },
+      { label: "B", text: "" },
+      { label: "C", text: "" },
+      { label: "D", text: "" },
+    ],
+    correctAnswer: "A",
+    explanation: "",
+  },
+];
+
+const Category = [
   "Logical Reasoning",
   "Mathematical Aptitude",
   "General Knowledge",
@@ -16,79 +31,72 @@ const categories = [
 ];
 
 function QuizComponent() {
-  const componentMounted = useRef(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [answers, setAnswers] = useState([]);
-  const [showExplanation, setShowExplanation] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState(null);
-  const [currentCategory, setCurrentCategory] = useState(categories[0]);
+
+const componentMounted = useRef(false);
 
   useEffect(() => {
     if (!componentMounted.current) {
       componentMounted.current = true;
     } else {
+      // Call fetchNewQuestion only if the component has mounted
       fetchNewQuestion();
     }
-    
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     // eslint-disable-next-line 
   }, []);
 
-  const handleOptionClick = useCallback(
-    (option) => {
-      setSelectedOption(option);
-      const updatedAnswers = [...answers];
-      updatedAnswers[currentQuestionIndex] = option.label;
-      setAnswers(updatedAnswers);
-      setShowExplanation(true);
+  const [showloading, setshowloading] = useState(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [answers, setAnswers] = useState(Array(questions.length).fill(null));
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(questions[0]);
+  const [currentCategory, setCurrentCategory] = useState(Category[0]);
 
-      const isCorrect = option.label === currentQuestion.correctAnswer;
-      if (isCorrect) {
-        const nextCategoryIndex = categories.indexOf(currentCategory) + 1;
-        setCurrentCategory(
-          nextCategoryIndex < categories.length
-            ? categories[nextCategoryIndex]
-            : categories[0]
-        );
+  const handleOptionClick = (option) => {
+    setSelectedOption(option);
+    const updatedAnswers = [...answers];
+    updatedAnswers[currentQuestionIndex] = option.label;
+    setAnswers(updatedAnswers);
+    setShowExplanation(true);
+    answerFlag = option.label === currentQuestion.correctAnswer;
+    if (answerFlag) {
+      if (Category.indexOf(currentCategory) < Category.length - 1) {
+        setCurrentCategory(Category[Category.indexOf(currentCategory) + 1]);
+      } else {
+        setCurrentCategory(Category[0]);
       }
-    },
-    [answers, currentQuestionIndex, currentQuestion, currentCategory]
-  );
+    }
+  };
 
-  const handleContinueClick = useCallback(async () => {
+  const handleContinueClick = async () => {
     setSelectedOption(null);
     await fetchNewQuestion();
+  };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const isOptionSelected = (option) => {
+    return selectedOption?.label === option.label;
+  };
 
-  const isOptionSelected = useCallback(
-    (option) => selectedOption?.label === option.label,
-    [selectedOption]
-  );
+  const isCorrectAnswer = (option) => {
+    return option.label === currentQuestion.correctAnswer;
+  };
 
-  const isCorrectAnswer = useCallback(
-    (option) => option.label === currentQuestion?.correctAnswer,
-    [currentQuestion]
-  );
-
-  const getOptionStyle = useCallback(
-    (option) => {
-      if (showExplanation) {
-        if (isCorrectAnswer(option)) {
-          return { backgroundColor: "#64FF96" };
-        } else if (isOptionSelected(option)) {
-          return { backgroundColor: "#FF9292" };
+  const getOptionStyle = (option) => {
+    if (showExplanation) {
+      if (isCorrectAnswer(option)) {
+        if (isOptionSelected(option)) {
+          answerFlag = true;
         }
+        console.log(answerFlag);
+        return { backgroundColor: "#64FF96" };
+      } else if (isOptionSelected(option) && !isCorrectAnswer(option)) {
+        return { backgroundColor: "#FF9292" };
       }
-      return {};
-    },
-    [showExplanation, isCorrectAnswer, isOptionSelected]
-  );
+    }
+  };
 
-  const fetchNewQuestion = useCallback(async () => {
-    setIsLoading(true);
+  const fetchNewQuestion = async () => {
+    setshowloading(true);
     const prompt = `Generate a multiple-choice question in the category of ${currentCategory} for students of standard 8th onwards. Provide the response in the following Format, don't respond anything else:
     
     Question: [Full question text within 40 words]
@@ -98,51 +106,41 @@ function QuizComponent() {
     D. [Fourth option]
     Correct Answer: [A, B, C, or D]
     Explanation: [Explanation with in 100 words]`;
-
+    console.log(prompt);
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = await response.text();
+    console.log(text);
 
     const newQuestion = parseGeneratedQuestion(text);
     setCurrentQuestion(newQuestion);
-    setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
+    setCurrentQuestionIndex(currentQuestionIndex + 1);
     setShowExplanation(false);
-    setIsLoading(false);
+    setshowloading(false);
+    answerFlag = false;
+  };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentCategory]);
+  const parseGeneratedQuestion = (text) => {
+    const lines = text.trim().split("\n");
+    const prompt = lines[0].replace("Question: ", "");
+    const options = [
+      { label: "A", text: lines[1].replace("A. ", "") },
+      { label: "B", text: lines[2].replace("B. ", "") },
+      { label: "C", text: lines[3].replace("C. ", "") },
+      { label: "D", text: lines[4].replace("D. ", "") },
+    ];
+    const correctAnswer = lines[5].replace("Correct Answer: ", "");
+    const explanation = lines[6].replace("Explanation: ", "");
 
-  const parseGeneratedQuestion = useCallback(
-    (text) => {
-      const lines = text.trim().split("\n");
-      const prompt = lines[0].replace("Question: ", "");
-      const options = [
-        { label: "A", text: lines[1].replace("A. ", "") },
-        { label: "B", text: lines[2].replace("B. ", "") },
-        { label: "C", text: lines[3].replace("C. ", "") },
-        { label: "D", text: lines[4].replace("D. ", "") },
-      ];
-      const correctAnswer = lines[5].replace("Correct Answer: ", "");
-      const explanation = lines[6].replace("Explanation: ", "");
-
-      return {
-        id: currentQuestionIndex + 1,
-        prompt,
-        options,
-        correctAnswer,
-        explanation,
-      };
-    },
-    [currentQuestionIndex]
-  );
-
-  const isContinueDisabled = !selectedOption;
-
-  // Call fetchNewQuestion only on the initial render
-  if (!componentMounted.current) {
-    componentMounted.current = true;
-    fetchNewQuestion();
-  }
+    return {
+      id: currentQuestionIndex + 1,
+      prompt,
+      options,
+      correctAnswer,
+      explanation,
+    };
+  };
+  const isContinueDisabled = selectedOption === null;
 
   return (
     <MainContainer>
@@ -156,20 +154,20 @@ function QuizComponent() {
         src="https://cdn.builder.io/api/v1/image/assets/TEMP/e8afa8948546c2c3fbfc70dd781a98cc5945478848c882ac206981811937afcc?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
         alt="Second image"
       />
-      {isLoading && (
-        <Loader>
+      {showloading && (
+        <Loadder>
           <CircularProgress />
-        </Loader>
+        </Loadder>
       )}
       <MainSection>
         <Header>
           <StreakHeader>Streak</StreakHeader>
           <SubHeader>Practice Skills</SubHeader>
-          <ExitButton>X</ExitButton>
+          <Exitbtn>X</Exitbtn>
         </Header>
         <QuizSection>
-          <QuizPrompt>{currentQuestion?.prompt}</QuizPrompt>
-          {currentQuestion?.options.map((option, index) => (
+          <QuizPrompt>{currentQuestion.prompt}</QuizPrompt>
+          {currentQuestion.options.map((option, index) => (
             <Option
               key={index}
               className={isOptionSelected(option) ? "selected" : ""}
@@ -202,7 +200,8 @@ function QuizComponent() {
     </MainContainer>
   );
 }
-const Loader = styled.div`
+
+const Loadder = styled.div`
   display: flex;
   background: rgba(0, 0, 0, 0.2);
   position: fixed;
@@ -342,7 +341,7 @@ const SubHeader = styled.h1`
   }
 `;
 
-const ExitButton = styled.div`
+const Exitbtn = styled.div`
   background-color: #8475ef;
   color: #fff;
   margin-left: 40px;

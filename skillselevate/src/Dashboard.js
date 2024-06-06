@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import styled from "styled-components";
-import AccountDrop from './AccountDrop'; 
+import AccountDrop from "./AccountDrop";
+import { useAuth } from "./AuthContext";
 
 function TestInfo({
   title,
@@ -32,8 +33,12 @@ function TestInfo({
 }
 
 function Dashboard() {
-    const [showDrop, setShowDrop] = useState(false);
+  const [showDrop, setShowDrop] = useState(false);
+  const { profile } = useAuth();
 
+  if (!profile) {
+    return <div>Loading...</div>;
+  }
   const testInfos = [
     {
       title: "Test 1",
@@ -84,36 +89,42 @@ function Dashboard() {
 
   return (
     <Wrapper>
-        {/* <ImageWrapper> */}
-        <Circle loading="lazy" src="https://cdn.builder.io/api/v1/image/assets/TEMP/fc1353b406cdc5577bcbd645528cc7cc9e348b0c8058cb65d083795bdd79ab29?apiKey=9fbb9e9d71d845eab2e7b2195d716278&" alt="First image" />
-        <Cube loading="lazy" src="https://cdn.builder.io/api/v1/image/assets/TEMP/e8afa8948546c2c3fbfc70dd781a98cc5945478848c882ac206981811937afcc?apiKey=9fbb9e9d71d845eab2e7b2195d716278&" alt="Second image" />
+      {/* <ImageWrapper> */}
+      <Circle
+        loading="lazy"
+        src="https://cdn.builder.io/api/v1/image/assets/TEMP/fc1353b406cdc5577bcbd645528cc7cc9e348b0c8058cb65d083795bdd79ab29?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+        alt="First image"
+      />
+      <Cube
+        loading="lazy"
+        src="https://cdn.builder.io/api/v1/image/assets/TEMP/e8afa8948546c2c3fbfc70dd781a98cc5945478848c882ac206981811937afcc?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+        alt="Second image"
+      />
       {/* </ImageWrapper> */}
-      
+
       <HeaderBar>
         <HeaderContent>
           <Logo>
-            <TitleLogo>Q  SkillsElevate</TitleLogo>
+            <TitleLogo>Q SkillsElevate</TitleLogo>
           </Logo>
           <ProfileImg
-            onClick={()=>setShowDrop(true)}
+            onClick={() => setShowDrop(true)}
             loading="lazy"
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/2e252a24899c4fee4d3258724cd216b03a529cf4c92298570dc96b5ed13763f9?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+            src={profile.picture}
           />
         </HeaderContent>
       </HeaderBar>
-      {showDrop && <AccountDrop onClose={() => setShowDrop(false)}/>}
+      {showDrop && <AccountDrop onClose={() => setShowDrop(false)} />}
       <Tests>
         <Subheading>
           <DropFilter>Select Category ▼</DropFilter>
-        <SectionTitle>Evaluate Your Skills!</SectionTitle>
+          <SectionTitle>Evaluate Your Skills!</SectionTitle>
         </Subheading>
         <TestGridContainer>
           <TestGrid>
-           
             {testInfos.map((info, idx) => (
               <TestInfo key={idx} {...info} />
             ))}
-           
           </TestGrid>
         </TestGridContainer>
       </Tests>
@@ -161,23 +172,23 @@ function Dashboard() {
 }
 
 const Subheading = styled.div`
-display: flex;
-flex-direction: row-reverse;
-justify-content:space-between;
-align-items:center;
-width: 100%;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 `;
 
 const DropFilter = styled.div`
-font-familiy: poppins;
-display:flex;
-height: 40px;
-width: 140px;
-border-radius: 20px;
-border: 2px solid #6A5AE0;
-color: #6A5AE0;
-align-items:center;
-justify-content: center;
+  font-familiy: poppins;
+  display: flex;
+  height: 40px;
+  width: 140px;
+  border-radius: 20px;
+  border: 2px solid #6a5ae0;
+  color: #6a5ae0;
+  align-items: center;
+  justify-content: center;
 `;
 
 const Circle = styled.img`
@@ -215,6 +226,7 @@ const ProfileImg = styled.img`
   margin-right: 30px;
   width: 60px;
   cursor: pointer;
+  border-radius: 50%;
   @media (max-width: 991px) {
     width: 40px;
     margin-right: 10px;
@@ -256,8 +268,10 @@ const HeaderContent = styled.div`
   width: 100%;
   gap: 20px;
   justify-content: space-between;
+
   @media (max-width: 991px) {
     flex-wrap: wrap;
+    align-items: center;
   }
 `;
 
@@ -287,10 +301,9 @@ const SectionTitle = styled.h2`
   }
 `;
 
-
 const Tests = styled.div`
   border-radius: 20px;
-  z-index:1;
+  z-index: 1;
   backdrop-filter: blur(10px);
   background-color: rgba(254, 254, 255, 0.5);
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
@@ -306,7 +319,6 @@ const Tests = styled.div`
   }
 `;
 
-
 const TestGridContainer = styled.div`
   margin-top: 27px;
   width: 95%;
@@ -314,7 +326,6 @@ const TestGridContainer = styled.div`
   display: flex;
   justify-content: space-around;
   overflow-x: auto; /* Enable horizontal scrolling for content overflow */
-
 `;
 
 const TestGrid = styled.div`
@@ -408,7 +419,7 @@ const SecondarySection = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-around;
-  z-index:1;
+  z-index: 1;
   align-items: center; /* Center content horizontally */
   @media (max-width: 991px) {
     max-width: 100%;
@@ -416,15 +427,14 @@ const SecondarySection = styled.div`
 `;
 
 const SecondaryContent = styled.div`
-display: flex;
-flex-direction: row;
-gap: 30px;
+  display: flex;
+  flex-direction: row;
+  gap: 30px;
   width: 83%;
   @media (max-width: 991px) {
     flex-direction: column;
     gap: 20px;
   }
-
 `;
 
 const EnhanceSkills = styled.div`

@@ -484,7 +484,7 @@ function LandingPage() {
             </ColumnSecondary>
           </FlexContainer>
         </MainSection>
-        <Section>
+        <Section id="about">
           <SectionContent>
             <SectionTitle>What we do?</SectionTitle>
             <SectionDescription>

@@ -1,5 +1,89 @@
-import React from 'react';
+import { React } from 'react';
 import styled from "styled-components";
+import {  useGoogleLogin } from '@react-oauth/google';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
+import axios from 'axios';
+
+function LoginOverlay({ onClose }) {
+  
+  const { setUser, setProfile } = useAuth();
+  const navigate = useNavigate();
+
+  const login = useGoogleLogin({
+    onSuccess: async (codeResponse) => {
+      setUser(codeResponse);
+      try {
+        const res = await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${codeResponse.access_token}`, {
+          headers: {
+            Authorization: `Bearer ${codeResponse.access_token}`,
+            Accept: 'application/json',
+          },
+        });
+        setProfile(res.data);
+        navigate('/dashboard');
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    onError: (error) => console.log('Login Failed:', error),
+  });
+  
+  return (
+      <LoginForm>
+        <Container>
+          <Card>
+            <div display="flex">
+              <Title>Login</Title>
+              <Subtitle>Log in to your SkillElevate account to continue</Subtitle>
+              <form>
+                <InputGroup marginTop="5%">
+                  <Icon
+                    loading="lazy"
+                    src="https://cdn.builder.io/api/v1/image/assets/TEMP/0a592f3e6a871ed42db10bc4b9f20d0695722c54d3a3fcd5c1e267f84847048a?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+                    alt="User Icon"
+                    />
+                  <TransparentInput type="text" id="username" placeholder="Username" />
+                </InputGroup>
+                <InputGroup marginTop="5%">
+                  <Icon
+                    loading="lazy"
+                    src="https://cdn.builder.io/api/v1/image/assets/TEMP/cf7ac098f5db87311adb5bb39ad666714d75de6cb890f8468d9b4fea61602d32?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+                    alt="Password Icon"
+                    />
+                  <TransparentInput type="password" id="password" placeholder="Enter your password" />
+                </InputGroup>
+                <ButtonWrapper>
+                  <Button type="submit">Login</Button>
+                </ButtonWrapper>
+              </form>
+              <Subtitle>Login with Others</Subtitle>
+              <SocialButton marginTop="5%" onClick={login}>
+                <SocialIcon
+                  loading="lazy"
+                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/f6d3d808ab4073688c4ad1c7066eb7286e3889dc42405f8a6653ac235230880a?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+                  alt="Google Icon"
+                  />
+                <SocialLabel>Continue with Google</SocialLabel>
+              </SocialButton>
+              <SocialButton marginTop="5%">
+                <SocialIcon
+                  loading="lazy"
+                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/b5fa1c4da0ef6638f7c37245831233436c9b89959a8b6fc18b5f60c5ffba227e?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+                  alt="LinkedIn Icon"
+                />
+                <SocialLabel>Continue with LinkedIn</SocialLabel>
+              </SocialButton>
+              <InfoText>Don't have an account? 
+              {/* eslint-disable-next-line */}
+                <a onClick={onClose}> Signup</a>
+              </InfoText>
+            </div>
+          </Card>
+        </Container>
+      </LoginForm>
+  );
+}
 
 const LoginForm = styled.div`
   background-color: transparent;
@@ -158,63 +242,5 @@ const InfoText = styled.p`
   font: 14px Poppins, sans-serif;
   cursor: pointer;
 `;
-
-function LoginOverlay({ onClose }) {
-
-  return (
-      <LoginForm>
-        <Container>
-          <Card>
-            <div display="flex">
-              <Title>Login</Title>
-              <Subtitle>Log in to your SkillElevate account to continue</Subtitle>
-              <form>
-                <InputGroup marginTop="5%">
-                  <Icon
-                    loading="lazy"
-                    src="https://cdn.builder.io/api/v1/image/assets/TEMP/0a592f3e6a871ed42db10bc4b9f20d0695722c54d3a3fcd5c1e267f84847048a?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
-                    alt="User Icon"
-                  />
-                  <TransparentInput type="text" id="username" placeholder="Username" />
-                </InputGroup>
-                <InputGroup marginTop="5%">
-                  <Icon
-                    loading="lazy"
-                    src="https://cdn.builder.io/api/v1/image/assets/TEMP/cf7ac098f5db87311adb5bb39ad666714d75de6cb890f8468d9b4fea61602d32?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
-                    alt="Password Icon"
-                  />
-                  <TransparentInput type="password" id="password" placeholder="Enter your password" />
-                </InputGroup>
-                <ButtonWrapper>
-                  <Button type="submit">Login</Button>
-                </ButtonWrapper>
-              </form>
-              <Subtitle>Login with Others</Subtitle>
-              <SocialButton marginTop="5%">
-                <SocialIcon
-                  loading="lazy"
-                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/f6d3d808ab4073688c4ad1c7066eb7286e3889dc42405f8a6653ac235230880a?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
-                  alt="Google Icon"
-                />
-                <SocialLabel>Continue with Google</SocialLabel>
-              </SocialButton>
-              <SocialButton marginTop="5%">
-                <SocialIcon
-                  loading="lazy"
-                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/b5fa1c4da0ef6638f7c37245831233436c9b89959a8b6fc18b5f60c5ffba227e?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
-                  alt="LinkedIn Icon"
-                />
-                <SocialLabel>Continue with LinkedIn</SocialLabel>
-              </SocialButton>
-              <InfoText>Don't have an account? 
-              {/* eslint-disable-next-line */}
-                <a onClick={onClose}> Signup</a>
-              </InfoText>
-            </div>
-          </Card>
-        </Container>
-      </LoginForm>
-  );
-}
 
 export default LoginOverlay;

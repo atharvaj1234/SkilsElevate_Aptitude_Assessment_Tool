@@ -4,3 +4,8 @@
 body{
     background-color: #cdc9f3;
 }
+
+html {
+    scroll-behavior: smooth;
+  }
+  
