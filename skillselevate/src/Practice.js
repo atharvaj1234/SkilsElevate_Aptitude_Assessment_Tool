@@ -1,9 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useNavigate } from "react-router-dom";
+import { auth, db } from "./firebase";
+import { query, collection, getDocs, where } from "firebase/firestore";
+import { useAuthState } from "react-firebase-hooks/auth";
+import MathJax from "react-mathjax2";
+
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-let API_KEY = process.env.REACT_APP_GEN_AI_API_KEY; 
+let API_KEY = process.env.REACT_APP_GEN_AI_API_KEY;
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -23,34 +29,123 @@ const questions = [
   },
 ];
 
+let Streak = 0;
+
 const Category = [
-  "Logical Reasoning",
-  "Mathematical Aptitude",
-  "General Knowledge",
-  "Verbal Ability",
+  {
+    Exam: "Default",
+    Category: [
+      "Logical Reasoning",
+      "Mathematical Aptitude",
+      "General Knowledge",
+      "Verbal Ability",
+    ],
+  },
+  {
+    Exam: "MAT",
+    Category: [
+      "Language Comprehension",
+      "Data Analysis & Sufficiency",
+      "Mathematical Skills",
+      "Intelligence & Critical Reasoning",
+      "Indian & Global Environment",
+    ],
+  },
+  {
+    Exam: "CAT",
+    Category: [
+      "Verbal Ability",
+      "Reading Comprehension",
+      "Quantitative Ability",
+      "Data Interpretation",
+      "Logical Reasoning",
+    ],
+  },
+  {
+    Exam: "UCO",
+    Category: [
+      "English language",
+      "General Awareness",
+      "Reasoning",
+      "Computer Aptitude",
+      "Data Interpretation",
+      "Analysis",
+    ],
+  },
+  {
+    Exam: "UIEO",
+    Category: [
+      "Vocabulary",
+      "Functional Grammer",
+      "Reading Comprehension",
+      "Interactive English",
+    ],
+  },
+  {
+    Exam: "GATE",
+    Category: [
+      "Toughest Logical Reasoning",
+      "Mathematical Aptitude",
+      "Quantitative Ability",
+      "General Knowledge",
+      "Verbal Ability",
+    ],
+  },
 ];
 
-function QuizComponent() {
+let CategoryList = [];
 
-const componentMounted = useRef(false);
+function QuizComponent() {
+  const [showloading, setshowloading] = useState(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [answers, setAnswers] = useState(Array(questions.length).fill(null));
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [showDrop, setShowDrop] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(questions[0]);
+  const [user, loading, error] = useAuthState(auth);
+  const [MotivationLine, setMotivationLine] = useState(
+    "You're doing Great!! Keep Going"
+  );
+  const navigate = useNavigate();
+  let [data, setName] = useState("");
+  let [currentCategory, setCurrentCategory] = useState("Reasoning");
+
+  const getdata = async () => {
+    try {
+      const q = query(collection(db, "users"), where("uid", "==", user?.uid));
+      const doc = await getDocs(q);
+      const data = doc.docs[0].data();
+      setName(data);
+      const ExamCat = Category.filter(
+        (category) => category.Exam.toLowerCase() === data.exam.toLowerCase()
+      );
+      // Safely select the first item from the filtered results, or default if the array is empty
+      const currentCategory =
+        ExamCat.length > 0 ? ExamCat[0].Category : Category[0]?.Category || [];
+      CategoryList = currentCategory;
+      setCurrentCategory(currentCategory[0]);
+      console.log(currentCategory[0]);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const componentMounted = useRef(false);
 
   useEffect(() => {
     if (!componentMounted.current) {
       componentMounted.current = true;
     } else {
       // Call fetchNewQuestion only if the component has mounted
+      // if (loading) return;
+      if (!user) return navigate("/");
+      if (error) console.log(error);
+      getdata();
       fetchNewQuestion();
     }
-     // eslint-disable-next-line 
-  }, []);
-
-  const [showloading, setshowloading] = useState(false);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [answers, setAnswers] = useState(Array(questions.length).fill(null));
-  const [showExplanation, setShowExplanation] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState(questions[0]);
-  const [currentCategory, setCurrentCategory] = useState(Category[0]);
+    // eslint-disable-next-line
+  }, [user, loading]);
 
   const handleOptionClick = (option) => {
     setSelectedOption(option);
@@ -60,12 +155,18 @@ const componentMounted = useRef(false);
     setShowExplanation(true);
     answerFlag = option.label === currentQuestion.correctAnswer;
     if (answerFlag) {
-      if (Category.indexOf(currentCategory) < Category.length - 1) {
-        setCurrentCategory(Category[Category.indexOf(currentCategory) + 1]);
+      Streak++;
+      if (CategoryList.indexOf(currentCategory) < CategoryList.length - 1) {
+        setCurrentCategory(
+          CategoryList[CategoryList.indexOf(currentCategory) + 1]
+        );
+        console.log(currentCategory);
       } else {
-        setCurrentCategory(Category[0]);
+        setCurrentCategory(CategoryList[0]);
+        console.log(currentCategory);
       }
-    }
+    } else Streak = 0;
+    Motivator();
   };
 
   const handleContinueClick = async () => {
@@ -87,7 +188,6 @@ const componentMounted = useRef(false);
         if (isOptionSelected(option)) {
           answerFlag = true;
         }
-        console.log(answerFlag);
         return { backgroundColor: "#64FF96" };
       } else if (isOptionSelected(option) && !isCorrectAnswer(option)) {
         return { backgroundColor: "#FF9292" };
@@ -97,41 +197,61 @@ const componentMounted = useRef(false);
 
   const fetchNewQuestion = async () => {
     setshowloading(true);
-    const prompt = `Generate a multiple-choice question in the category of ${currentCategory} for students of standard 8th onwards. Provide the response in the following Format, don't respond anything else:
+    console.log(currentCategory,data.exam)
+    const prompt = `Generate a multiple-choice question in the category of ${currentCategory} for students appearing for ${data.exam} Exam. If the question contains mathematical symbols then Provide symbols for mathematical expressions in pure Latex form, and start math with Tilde (\`) symbol. Strictly Provide the response in the following Format including spaces and newlines, don't respond anything else:
     
-    Question: [Full question text within 40 words]
+    Question: [Full question]
     A. [First option]
     B. [Second option]
     C. [Third option]
     D. [Fourth option]
-    Correct Answer: [A, B, C, or D]
-    Explanation: [Explanation with in 100 words]`;
-    console.log(prompt);
+    Correct Answer: [Only letters A, B, C, or D]
+    Explanation: [Explanation within 100 words]`;
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = await response.text();
-    console.log(text);
 
     const newQuestion = parseGeneratedQuestion(text);
     setCurrentQuestion(newQuestion);
     setCurrentQuestionIndex(currentQuestionIndex + 1);
     setShowExplanation(false);
     setshowloading(false);
+    setShowDrop(false);
     answerFlag = false;
   };
 
   const parseGeneratedQuestion = (text) => {
     const lines = text.trim().split("\n");
-    const prompt = lines[0].replace("Question: ", "");
-    const options = [
-      { label: "A", text: lines[1].replace("A. ", "") },
-      { label: "B", text: lines[2].replace("B. ", "") },
-      { label: "C", text: lines[3].replace("C. ", "") },
-      { label: "D", text: lines[4].replace("D. ", "") },
-    ];
-    const correctAnswer = lines[5].replace("Correct Answer: ", "");
-    const explanation = lines[6].replace("Explanation: ", "");
-
+  
+    // Initialize variables to store the parsed data
+    let prompt = "";
+    const options = [];
+    let correctAnswer = "";
+    let explanation = "";
+  
+    // Iterate through each line to find and extract the necessary information
+    lines.forEach((line, index) => {
+      if (line.startsWith("Question: ")) {
+        prompt = line.replace("Question: ", "");
+      } else if (line.startsWith("A. ")) {
+        options.push({ label: "A", text: line.replace("A. ", "") });
+      } else if (line.startsWith("B. ")) {
+        options.push({ label: "B", text: line.replace("B. ", "") });
+      } else if (line.startsWith("C. ")) {
+        options.push({ label: "C", text: line.replace("C. ", "") });
+      } else if (line.startsWith("D. ")) {
+        options.push({ label: "D", text: line.replace("D. ", "") });
+      } else if (line.startsWith("Correct Answer: ")) {
+        correctAnswer = line.replace("Correct Answer: ", "");
+      } else if (line.startsWith("Explanation: ")) {
+        explanation = line.replace("Explanation: ", "");
+      }
+    });
+  
+    // Log the correct answer for debugging purposes
+    console.log(correctAnswer);
+  
+    // Return the parsed question object
     return {
       id: currentQuestionIndex + 1,
       prompt,
@@ -140,7 +260,33 @@ const componentMounted = useRef(false);
       explanation,
     };
   };
+  
   const isContinueDisabled = selectedOption === null;
+
+  const MotivationalLines = [
+    "Impressive! Keep up the great work! 👏🔥",
+    "You’re on fire! Consistency pays off. 🔥🚀",
+    "Your dedication is inspiring! 💪🌟",
+    "Bravo! You’re acing it! 🎉👍",
+    "Success is a series of small wins—celebrate each one! 🌟🎈",
+    "You’re building a strong foundation. Keep going! 🏗️📚",
+    "Smart choices lead to remarkable results. 🤓💡",
+    "You’re unlocking your potential! 🌟🔓",
+    "Perseverance is your superpower. 💪🌈",
+    "Remember, progress beats perfection! 🚀🌟",
+  ];
+
+  const Motivator = () => {
+    if (Streak > 2) {
+      let min = Streak > 2 ? 0 : 4;
+      let max = Streak > 4 ? 5 : 9;
+      let randnum = Math.floor(Math.random() * (max - min + 1)) + min;
+      console.log(randnum);
+      let motivation = MotivationalLines[randnum];
+      setMotivationLine(motivation);
+      setShowDrop(true);
+    }
+  };
 
   return (
     <MainContainer>
@@ -159,14 +305,23 @@ const componentMounted = useRef(false);
           <CircularProgress />
         </Loadder>
       )}
+      {showDrop && (
+        <Motivation className={isContinueDisabled ? "disabled" : "enabled"}>
+          {MotivationLine}
+        </Motivation>
+      )}
       <MainSection>
         <Header>
-          <StreakHeader>Streak</StreakHeader>
+          <StreakHeader>🔥 {Streak}</StreakHeader>
           <SubHeader>Practice Skills</SubHeader>
-          <Exitbtn>X</Exitbtn>
+          <Exitbtn onClick={() => navigate("/dashboard")}>X</Exitbtn>
         </Header>
         <QuizSection>
-          <QuizPrompt>{currentQuestion.prompt}</QuizPrompt>
+          <QuizPrompt>
+            <MathJax.Context input="tex">
+              <MathJax.Text text={currentQuestion.prompt} />
+            </MathJax.Context>
+          </QuizPrompt>
           {currentQuestion.options.map((option, index) => (
             <Option
               key={index}
@@ -176,12 +331,20 @@ const componentMounted = useRef(false);
             >
               <Options>
                 <OptionLabel>{option.label}</OptionLabel>
-                <OptionText>{option.text}</OptionText>
+                <OptionText>
+                  <MathJax.Context input="tex">
+                    <MathJax.Text text={option.text} />
+                  </MathJax.Context>
+                </OptionText>
               </Options>
               {showExplanation && isCorrectAnswer(option) && (
                 <ExplanationBox>
                   <h3>Explanation:</h3>
-                  <p>{currentQuestion.explanation}</p>
+                  <MathJax.Context input="tex">
+                    <p>
+                      <MathJax.Text text={currentQuestion.explanation} />
+                    </p>
+                  </MathJax.Context>
                 </ExplanationBox>
               )}
             </Option>
@@ -200,6 +363,56 @@ const componentMounted = useRef(false);
     </MainContainer>
   );
 }
+
+const Motivation = styled.div`
+  position: fixed;
+  top: 5px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  background-color: #fffe;
+  border-radius: 20px;
+  height: 100px;
+  padding: 0px 30px;
+  font-size: 20px;
+  backdrop-filter: blur(15px);
+  &.enabled {
+    animation: fadeInDown 0.5s ease-out forwards;
+    @keyframes fadeInDown {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      70% {
+        opacity: 1;
+        transform: translateY(5px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+  &.disabled {
+    animation: fadeOutUp 0.5s ease-out forwards;
+    @keyframes fadeOutUp {
+      0% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      30% {
+        opacity: 1;
+        transform: translateY(5px);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+    }
+  }
+`;
 
 const Loadder = styled.div`
   display: flex;

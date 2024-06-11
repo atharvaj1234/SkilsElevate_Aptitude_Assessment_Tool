@@ -1,87 +1,80 @@
-import { React } from 'react';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { auth, logInWithEmailAndPassword, signInWithGoogle } from "./firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
 import styled from "styled-components";
-import {  useGoogleLogin } from '@react-oauth/google';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
-import axios from 'axios';
 
 function LoginOverlay({ onClose }) {
-  
-  const { setUser, setProfile } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [user, loading, error] = useAuthState(auth);
   const navigate = useNavigate();
+  useEffect(() => {
+    if (loading) {
+      // maybe trigger a loading screen
+      return;
+    }
+    if (user) navigate("/dashboard");
+    if(error) console.log(error);
+    // eslint-disable-next-line
+  }, [user, loading]);
 
-  const login = useGoogleLogin({
-    onSuccess: async (codeResponse) => {
-      setUser(codeResponse);
-      try {
-        const res = await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${codeResponse.access_token}`, {
-          headers: {
-            Authorization: `Bearer ${codeResponse.access_token}`,
-            Accept: 'application/json',
-          },
-        });
-        setProfile(res.data);
-        navigate('/dashboard');
-      } catch (err) {
-        console.log(err);
-      }
-    },
-    onError: (error) => console.log('Login Failed:', error),
-  });
-  
   return (
-      <LoginForm>
-        <Container>
-          <Card>
-            <div display="flex">
-              <Title>Login</Title>
-              <Subtitle>Log in to your SkillElevate account to continue</Subtitle>
-              <form>
-                <InputGroup marginTop="5%">
-                  <Icon
-                    loading="lazy"
-                    src="https://cdn.builder.io/api/v1/image/assets/TEMP/0a592f3e6a871ed42db10bc4b9f20d0695722c54d3a3fcd5c1e267f84847048a?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
-                    alt="User Icon"
-                    />
-                  <TransparentInput type="text" id="username" placeholder="Username" />
-                </InputGroup>
-                <InputGroup marginTop="5%">
-                  <Icon
-                    loading="lazy"
-                    src="https://cdn.builder.io/api/v1/image/assets/TEMP/cf7ac098f5db87311adb5bb39ad666714d75de6cb890f8468d9b4fea61602d32?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
-                    alt="Password Icon"
-                    />
-                  <TransparentInput type="password" id="password" placeholder="Enter your password" />
-                </InputGroup>
-                <ButtonWrapper>
-                  <Button type="submit">Login</Button>
-                </ButtonWrapper>
-              </form>
-              <Subtitle>Login with Others</Subtitle>
-              <SocialButton marginTop="5%" onClick={login}>
-                <SocialIcon
+    <LoginForm>
+      <Container>
+        <Card>
+          <div display="flex">
+            <Title>Login</Title>
+            <Subtitle>Log in to your SkillElevate account to continue</Subtitle>
+            <div>
+              <InputGroup marginTop="5%">
+                <Icon
                   loading="lazy"
-                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/f6d3d808ab4073688c4ad1c7066eb7286e3889dc42405f8a6653ac235230880a?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
-                  alt="Google Icon"
-                  />
-                <SocialLabel>Continue with Google</SocialLabel>
-              </SocialButton>
-              <SocialButton marginTop="5%">
-                <SocialIcon
-                  loading="lazy"
-                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/b5fa1c4da0ef6638f7c37245831233436c9b89959a8b6fc18b5f60c5ffba227e?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
-                  alt="LinkedIn Icon"
+                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/0a592f3e6a871ed42db10bc4b9f20d0695722c54d3a3fcd5c1e267f84847048a?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+                  alt="User Icon"
                 />
-                <SocialLabel>Continue with LinkedIn</SocialLabel>
-              </SocialButton>
-              <InfoText>Don't have an account? 
-              {/* eslint-disable-next-line */}
-                <a onClick={onClose}> Signup</a>
-              </InfoText>
+                <TransparentInput
+                  type="text"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="E-mail Address"
+                />
+              </InputGroup>
+              <InputGroup marginTop="5%">
+                <Icon
+                  loading="lazy"
+                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/cf7ac098f5db87311adb5bb39ad666714d75de6cb890f8468d9b4fea61602d32?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+                  alt="Password Icon"
+                />
+                <TransparentInput
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password"
+                />
+              </InputGroup>
+              <ButtonWrapper>
+                <Button onClick={() => logInWithEmailAndPassword(email, password)}>Login</Button>
+              </ButtonWrapper>
             </div>
-          </Card>
-        </Container>
-      </LoginForm>
+            <Subtitle>Login with Others</Subtitle>
+            <SocialButton marginTop="5%" onClick={signInWithGoogle}>
+              <SocialIcon
+                loading="lazy"
+                src="https://cdn.builder.io/api/v1/image/assets/TEMP/f6d3d808ab4073688c4ad1c7066eb7286e3889dc42405f8a6653ac235230880a?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+                alt="Google Icon"
+              />
+              <SocialLabel>Continue with Google</SocialLabel>
+            </SocialButton>
+            <InfoText>
+              Don't have an account?
+              {/* eslint-disable-next-line */}
+              <a onClick={onClose}> Signup</a>
+            </InfoText>
+          </div>
+        </Card>
+      </Container>
+    </LoginForm>
   );
 }
 
@@ -112,11 +105,11 @@ const Container = styled.section`
   }
   animation: fade 0.3s ease-out forwards;
 
-  @keyframes fade{
-    0%{
+  @keyframes fade {
+    0% {
       opacity: 0;
     }
-    100%{
+    100% {
       opacity: 1;
     }
   }
@@ -166,7 +159,7 @@ const InputGroup = styled.div`
   margin-top: ${({ marginTop }) => (marginTop ? marginTop : "0")};
 `;
 
-const TransparentInput = styled.input.attrs({ type: 'text' })`
+const TransparentInput = styled.input.attrs({ type: "text" })`
   background-color: transparent;
   border: none;
   outline: none;

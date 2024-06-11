@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from "react";
+import LoginOverlay from "./Login";
 import styled from "styled-components";
-import LoginOverlay from './Login'; // Ensure this is imported correctly
-
-
+import { useAuthState } from "react-firebase-hooks/auth";
+import { useNavigate } from "react-router-dom";
+import {
+  auth,
+  registerWithEmailAndPassword,
+  signInWithGoogle,
+} from "./firebase";
 
 const SignupForm = styled.div`
   background-color: transparent;
@@ -31,12 +36,12 @@ const Container = styled.section`
   }
   animation: fadeInDown 0.5s ease-out forwards;
 
-  @keyframes fadeInDown{
-    0%{
+  @keyframes fadeInDown {
+    0% {
       opacity: 0;
       transform: translateY(-20px);
     }
-    100%{
+    100% {
       opacity: 1;
       transform: translateY(0);
     }
@@ -87,7 +92,7 @@ const InputGroup = styled.div`
   margin-top: ${({ marginTop }) => (marginTop ? marginTop : "0")};
 `;
 
-const TransparentInput = styled.input.attrs({ type: 'text' })`
+const TransparentInput = styled.input.attrs({ type: "text" })`
   background-color: transparent;
   border: none;
   outline: none;
@@ -166,84 +171,113 @@ const InfoText = styled.p`
 
 function Signup({ onClose }) {
   const [showLogin, setShowLogin] = useState(false);
-  
+
   const toggleComponent = () => {
-    setShowLogin(!showLogin); 
-  };  
+    setShowLogin(!showLogin);
+  };
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [user, loading, error] = useAuthState(auth);
+  const navigate = useNavigate();
+  const register = () => {
+    if (!name || !email || !password) alert("Please full all the fields");
+    registerWithEmailAndPassword(name, email, password);
+  };
+  useEffect(() => {
+    if (loading) return;
+    if (user) navigate("/dashboard");
+    if (error) console.log(error);
+    // eslint-disable-next-line
+  }, [user, loading]);
 
   return (
     <>
       {showLogin ? (
         <LoginOverlay onClose={() => setShowLogin(false)} />
       ) : (
-          <SignupForm>
-            <Container>
-              <Card>
-                <div display="flex">
-                  <Title>Sign up</Title>
-                  <Subtitle>Create a new SkillElevate account to continue</Subtitle>
-                  <form>
-                    <InputGroup marginTop="5%">
-                      <Icon
-                        loading="lazy"
-                        src="https://cdn.builder.io/api/v1/image/assets/TEMP/0a592f3e6a871ed42db10bc4b9f20d0695722c54d3a3fcd5c1e267f84847048a?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
-                        alt="User Icon"
-                      />
-                      <TransparentInput type="text" id="username" placeholder="Username" />
-                    </InputGroup>
-                    <InputGroup marginTop="5%">
-                      <Icon
-                        loading="lazy"
-                        src="https://cdn.builder.io/api/v1/image/assets/TEMP/cf7ac098f5db87311adb5bb39ad666714d75de6cb890f8468d9b4fea61602d32?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
-                        alt="Email Icon"
-                      />
-                      <TransparentInput type="email" id="email" placeholder="Enter your email" />
-                    </InputGroup>
-                    <InputGroup marginTop="5%">
-                      <Icon
-                        loading="lazy"
-                        src="https://cdn.builder.io/api/v1/image/assets/TEMP/cf7ac098f5db87311adb5bb39ad666714d75de6cb890f8468d9b4fea61602d32?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
-                        alt="Password Icon"
-                      />
-                      <TransparentInput type="password" id="password" placeholder="Enter your password" />
-                    </InputGroup>
-                    <InputGroup marginTop="5%">
+        <SignupForm>
+          <Container>
+            <Card>
+              <div display="flex">
+                <Title>Sign up</Title>
+                <Subtitle>
+                  Create a new SkillElevate account to continue
+                </Subtitle>
+                <div>
+                  <InputGroup marginTop="5%">
+                    <Icon
+                      loading="lazy"
+                      src="https://cdn.builder.io/api/v1/image/assets/TEMP/0a592f3e6a871ed42db10bc4b9f20d0695722c54d3a3fcd5c1e267f84847048a?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+                      alt="User Icon"
+                    />
+                    <TransparentInput
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Full Name"
+                    />
+                  </InputGroup>
+                  <InputGroup marginTop="5%">
+                    <Icon
+                      loading="lazy"
+                      src="https://cdn.builder.io/api/v1/image/assets/TEMP/cf7ac098f5db87311adb5bb39ad666714d75de6cb890f8468d9b4fea61602d32?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+                      alt="Email Icon"
+                    />
+                    <TransparentInput
+                      type="text"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="E-mail Address"
+                    />
+                  </InputGroup>
+                  <InputGroup marginTop="5%">
+                    <Icon
+                      loading="lazy"
+                      src="https://cdn.builder.io/api/v1/image/assets/TEMP/cf7ac098f5db87311adb5bb39ad666714d75de6cb890f8468d9b4fea61602d32?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+                      alt="Password Icon"
+                    />
+                    <TransparentInput
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Password"
+                    />
+                  </InputGroup>
+                  /
+                  {/* <InputGroup marginTop="5%">
                       <Icon
                         loading="lazy"
                         src="https://cdn.builder.io/api/v1/image/assets/TEMP/cf7ac098f5db87311adb5bb39ad666714d75de6cb890f8468d9b4fea61602d32?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
                         alt="Confirm Password Icon"
                       />
                       <TransparentInput type="password" id="confirmPassword" placeholder="Confirm your password" />
-                    </InputGroup>
-                    <ButtonWrapper>
-                      <Button type="submit">Sign Up</Button>
-                    </ButtonWrapper>
-                  </form>
-                  <Subtitle>Signup with Others</Subtitle>
-                  <SocialButton marginTop="5%">
-                    <SocialIcon
-                      loading="lazy"
-                      src="https://cdn.builder.io/api/v1/image/assets/TEMP/f6d3d808ab4073688c4ad1c7066eb7286e3889dc42405f8a6653ac235230880a?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
-                      alt="Google Icon"
-                    />
-                    <SocialLabel>Continue with Google</SocialLabel>
-                  </SocialButton>
-                  <SocialButton marginTop="5%">
-                    <SocialIcon
-                      loading="lazy"
-                      src="https://cdn.builder.io/api/v1/image/assets/TEMP/b5fa1c4da0ef6638f7c37245831233436c9b89959a8b6fc18b5f60c5ffba227e?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
-                      alt="LinkedIn Icon"
-                    />
-                    <SocialLabel>Continue with LinkedIn</SocialLabel>
-                  </SocialButton>
-                  <InfoText>Already have an account? 
-                    {/* eslint-disable-next-line */}
-                    <a onClick={toggleComponent}> Login</a>
-                  </InfoText>
+                    </InputGroup> */}
+                  <ButtonWrapper>
+                    <Button onClick={register}>
+                      Sign Up
+                    </Button>
+                  </ButtonWrapper>
                 </div>
-              </Card>
-            </Container>
-          </SignupForm>
+                <Subtitle>Signup with Others</Subtitle>
+                <SocialButton marginTop="5%" onClick={signInWithGoogle}>
+                  <SocialIcon
+                    loading="lazy"
+                    src="https://cdn.builder.io/api/v1/image/assets/TEMP/f6d3d808ab4073688c4ad1c7066eb7286e3889dc42405f8a6653ac235230880a?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+                    alt="Google Icon"
+                  />
+                  <SocialLabel>Continue with Google</SocialLabel>
+                </SocialButton>
+                <InfoText>
+                  Already have an account?
+                  {/* eslint-disable-next-line */}
+                  <a onClick={toggleComponent}> Login</a>
+                </InfoText>
+              </div>
+            </Card>
+          </Container>
+        </SignupForm>
       )}
     </>
   );

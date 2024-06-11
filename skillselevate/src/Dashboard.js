@@ -1,91 +1,204 @@
-import React, { useState } from "react";
-import styled from "styled-components";
+import React, { useEffect, useState, useMemo } from "react";
 import AccountDrop from "./AccountDrop";
-import { useAuth } from "./AuthContext";
+import PersonlizationProfile from "./PersonlizeProfile";
+import CircularProgress from "@mui/material/CircularProgress";
+import styled from "styled-components";
+import { auth, db } from "./firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { query, collection, getDocs, where } from "firebase/firestore";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { useNavigate } from "react-router-dom";
+import CategoryDropdown from "./CategoryDropdown";
 
-function TestInfo({
-  title,
-  difficulty,
-  questions,
-  time,
-  imageSrc,
-  status,
-  buttonLabel,
-}) {
-  return (
-    <SectionCard>
-      <InfoContent>
-        <InfoDetails>
-          <Title>{title}</Title>
-          <Break />
-          <DetailText>Difficulty level: {difficulty}</DetailText>
-          <DetailText>No. of questions: {questions}</DetailText>
-          <DetailText>Time: {time}</DetailText>
-        </InfoDetails>
-        {status === "locked" ? (
-          <InfoImage loading="lazy" src={imageSrc} />
-        ) : (
-          <StartButton>{buttonLabel}</StartButton>
-        )}
-      </InfoContent>
-    </SectionCard>
-  );
-}
-
-function Dashboard() {
+const Category = [
+  {
+    Exam: "Default",
+    Category: [
+      "Logical Reasoning",
+      "Mathematical Aptitude",
+      "General Knowledge",
+      "Verbal Ability",
+    ],
+  },
+  {
+    Exam: "MAT",
+    Category: [
+      "Language Comprehension",
+      "Data Analysis & Sufficiency",
+      "Mathematical Skills",
+      "Intelligence & Critical Reasoning",
+      "Indian & Global Environment",
+    ],
+  },
+  {
+    Exam: "CAT",
+    Category: [
+      "Verbal Ability",
+      "Reading Comprehension",
+      "Quantitative Ability",
+      "Data Interpretation",
+      "Logical Reasoning",
+    ],
+  },
+  {
+    Exam: "UCO",
+    Category: [
+      "English language",
+      "General Awareness",
+      "Reasoning",
+      "Computer Aptitude",
+      "Data Interpretation",
+      "Analysis",
+    ],
+  },
+  {
+    Exam: "UIEO",
+    Category: [
+      "Vocabulary",
+      "Functional Grammer",
+      "Reading Comprehension",
+      "Interactive English",
+    ],
+  },
+  {
+    Exam: "GATE",
+    Category: [
+      "Toughest Logical Reasoning",
+      "Mathematical Aptitude",
+      "Quantitative Ability",
+      "General Knowledge",
+      "Verbal Ability",
+    ],
+  },
+];
+const Dashboard = React.memo(() => {
   const [showDrop, setShowDrop] = useState(false);
-  const { profile } = useAuth();
+  const [user, loading, error] = useAuthState(auth);
+  const [showPersonlization, setShowPersonlization] = useState(false);
+  const [testInfos, setTestInfos] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const navigate = useNavigate();
+  const imageSrc =
+    "https://cdn.builder.io/api/v1/image/assets/TEMP/86979919fb4649685b09a11fe4e04152a5859859c9fa99363941b6705c39d316?apiKey=9fbb9e9d71d845eab2e7b2195d716278&";
+  let [data, setName] = useState("");
 
-  if (!profile) {
-    return <div>Loading...</div>;
+  const [selectedCategory, setSelectedCategory] = useState("Mock");
+
+  const handleCategorySelect = (category) => {
+    setSelectedCategory(category);
+  };
+
+  const filteredTestInfos = selectedCategory
+    ? Object.entries(testInfos).reduce((acc, [testid, testData]) => {
+        if (testData.category === selectedCategory) {
+          acc[testid] = testData;
+        }
+        return acc;
+      }, {})
+    : testInfos;
+
+  const fetchUserName = useMemo(() => async () => {
+    try {
+      const q = query(collection(db, "users"), where("uid", "==", user?.uid));
+      const doc = await getDocs(q);
+      const data = doc.docs[0].data();
+      setName(data);
+      if (data.exam === null) {
+        setShowPersonlization(true);
+      } else {
+        await getdata();
+        const filter = Category.filter(
+          (category) => category.Exam === data.exam
+        );
+        setCategories(filter[0].Category);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occured while fetching user data");
+    }
+  });
+
+  const getdata = useMemo(() => async () => {
+    try {
+      const q = query(collection(db, "users"), where("uid", "==", user?.uid));
+      const doc1 = await getDocs(q);
+      const data = doc1.docs[0].data();
+      const docRef = doc(db, "tests", data.exam);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        let fetched = docSnap.data();
+        setTestInfos(fetched);
+        console.log(fetched);
+      } else {
+        console.log("No such document!");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  });
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user) return navigate("/");
+    if (error) console.log(error);
+    fetchUserName();
+    // eslint-disable-next-line
+  }, [user, loading]);
+
+  function TestInfo({ testInfos }) {
+    if (Object.keys(testInfos).length === 0)
+      return <p>No Tests Found for the Selected Category</p>;
+    const sortedTestInfos = Object.entries(testInfos).sort(
+      ([keyA, dataA], [keyB, dataB]) => {
+        return dataA.title.localeCompare(dataB.title);
+      }
+    );
+    return (
+      <>
+        {sortedTestInfos.map(([testid, testData]) => (
+          <SectionCard key={testid}>
+            <InfoContent>
+              <InfoDetails>
+                <Title>{testData.title}</Title>
+                <Break />
+                <DetailText>
+                  Difficulty level: {testData.difficultyLevel}
+                </DetailText>
+                <DetailText>
+                  No. of questions: {testData.question.length}
+                </DetailText>
+                <DetailText>Time: {testData.time} minutes</DetailText>
+              </InfoDetails>
+              {parseInt(testid.replace(/\D/g, "")) <=
+              data.userdata.CurrentTest ? (
+                parseInt(testid.replace(/\D/g, "")) <
+                data.userdata.CurrentTest ? (
+                  <StartButton
+                    onClick={() =>
+                      navigate("/test", { state: { testId: testid } })
+                    }
+                  >
+                    Retake
+                  </StartButton>
+                ) : (
+                  <StartButton
+                    onClick={() =>
+                      navigate("/test", { state: { testId: testid } })
+                    }
+                  >
+                    Start
+                  </StartButton>
+                )
+              ) : (
+                <InfoImage loading="lazy" src={imageSrc} />
+              )}
+            </InfoContent>
+          </SectionCard>
+        ))}
+      </>
+    );
   }
-  const testInfos = [
-    {
-      title: "Test 1",
-      difficulty: "easy",
-      questions: 20,
-      time: "15 mins",
-      imageSrc: "",
-      status: "active",
-      buttonLabel: "Start",
-    },
-    {
-      title: "Test 2",
-      difficulty: "easy",
-      questions: 20,
-      time: "15 mins",
-      imageSrc:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/86979919fb4649685b09a11fe4e04152a5859859c9fa99363941b6705c39d316?apiKey=9fbb9e9d71d845eab2e7b2195d716278&",
-      status: "locked",
-    },
-    {
-      title: "Test 3",
-      difficulty: "medium",
-      questions: 20,
-      time: "15 mins",
-      imageSrc:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/86979919fb4649685b09a11fe4e04152a5859859c9fa99363941b6705c39d316?apiKey=9fbb9e9d71d845eab2e7b2195d716278&",
-      status: "locked",
-    },
-    {
-      title: "Test 4",
-      difficulty: "medium",
-      questions: 20,
-      time: "15 mins",
-      imageSrc:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/86979919fb4649685b09a11fe4e04152a5859859c9fa99363941b6705c39d316?apiKey=9fbb9e9d71d845eab2e7b2195d716278&",
-      status: "locked",
-    },
-    {
-      title: "Test 5",
-      difficulty: "hard",
-      questions: 20,
-      time: "15 mins",
-      imageSrc:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/86979919fb4649685b09a11fe4e04152a5859859c9fa99363941b6705c39d316?apiKey=9fbb9e9d71d845eab2e7b2195d716278&",
-      status: "locked",
-    },
-  ];
 
   return (
     <Wrapper>
@@ -102,6 +215,12 @@ function Dashboard() {
       />
       {/* </ImageWrapper> */}
 
+      {showPersonlization && (
+        <Overlay>
+          <PersonlizationProfile />
+        </Overlay>
+      )}
+
       <HeaderBar>
         <HeaderContent>
           <Logo>
@@ -110,21 +229,23 @@ function Dashboard() {
           <ProfileImg
             onClick={() => setShowDrop(true)}
             loading="lazy"
-            src={profile.picture}
+            src={data.profilepicture}
           />
         </HeaderContent>
       </HeaderBar>
       {showDrop && <AccountDrop onClose={() => setShowDrop(false)} />}
       <Tests>
         <Subheading>
-          <DropFilter>Select Category ▼</DropFilter>
+          <CategoryDropdown
+            categories={categories}
+            onCategorySelect={handleCategorySelect}
+          />
           <SectionTitle>Evaluate Your Skills!</SectionTitle>
         </Subheading>
         <TestGridContainer>
           <TestGrid>
-            {testInfos.map((info, idx) => (
-              <TestInfo key={idx} {...info} />
-            ))}
+            {!data && <CircularProgress />}
+            {data && <TestInfo testInfos={filteredTestInfos} />}
           </TestGrid>
         </TestGridContainer>
       </Tests>
@@ -148,7 +269,9 @@ function Dashboard() {
                 </DescriptionText>
               </EnhanceDescription>
             </EnhanceInner>
-            <PracticeButton>Start Practice</PracticeButton>
+            <PracticeButton onClick={() => navigate("/practice")}>
+              Start Practice
+            </PracticeButton>
           </EnhanceSkills>
           <ReviewStats>
             <StatsTitle>Review Statistics</StatsTitle>
@@ -169,7 +292,20 @@ function Dashboard() {
       </SecondarySection>
     </Wrapper>
   );
-}
+});
+
+const Overlay = styled.div`
+  position: fixed;
+  z-index: 3;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
 
 const Subheading = styled.div`
   display: flex;
@@ -177,18 +313,6 @@ const Subheading = styled.div`
   justify-content: space-between;
   align-items: center;
   width: 100%;
-`;
-
-const DropFilter = styled.div`
-  font-familiy: poppins;
-  display: flex;
-  height: 40px;
-  width: 140px;
-  border-radius: 20px;
-  border: 2px solid #6a5ae0;
-  color: #6a5ae0;
-  align-items: center;
-  justify-content: center;
 `;
 
 const Circle = styled.img`
@@ -365,7 +489,7 @@ const InfoImage = styled.img`
 
 const InfoContent = styled.div`
   padding: 30px 15px 20px;
-  width: 200px;
+  width: 210px;
   background-color: #fff;
   border: 2px solid rgba(143, 128, 255, 1);
   border-radius: 20px;
@@ -402,7 +526,7 @@ const StartButton = styled.button`
   color: #fff;
   border-radius: 10px;
   padding: 20px 35px;
-  font-size: 24px;
+  font-size: 20px;
   font-family: "Abhaya Libre", sans-serif;
   align-self: center;
   justify-content: center;

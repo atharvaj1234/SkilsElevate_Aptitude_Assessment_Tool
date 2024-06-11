@@ -1,26 +1,36 @@
-import * as React from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import styled from "styled-components";
-import { useAuth } from "./AuthContext";
-import { useNavigate } from 'react-router-dom';
+import { auth, db, logout } from "./firebase";
+import { query, collection, getDocs, where } from "firebase/firestore";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 
-function AccountManagement({ onClose }) {
 
-  const { profile, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
-
-  if (!profile) {
-    return <div>Loading...</div>;
-  }
+  const AccountManagement = React.memo(({ onClose }) => {
+  // eslint-disable-next-line
+  const [user, loading, error] = useAuthState(auth);
+  let [data, setName] = useState("");
+  const fetchUserName = useMemo(() => async () => {
+    try {
+      const q = query(collection(db, "users"), where("uid", "==", user?.uid));
+      const doc = await getDocs(q);
+      const data = doc.docs[0].data();
+      setName(data);
+    } catch (err) {
+      console.error(err);
+      alert("An error occured while fetching user data");
+    }
+  });
+  useEffect(() => {
+    fetchUserName();
+    // eslint-disable-next-line
+  }, [data, loading]);
 
   return (
     <>
       <Division>
-        <ProfileImg onClick={onClose} loading="lazy" src={profile.picture} />
+        <ProfileImg onClick={onClose} loading="lazy" src={data.profilepicture} />
         <AccountOption>
           <OptionText>Manage Account</OptionText>
           <OptionIcon
@@ -29,7 +39,7 @@ function AccountManagement({ onClose }) {
             alt="Manage Account Icon"
           />
         </AccountOption>
-        <AccountOption onClick={handleLogout}>
+        <AccountOption onClick={logout}>
           <OptionText>Log Out</OptionText>
           <OptionIcon
             loading="lazy"
@@ -40,9 +50,9 @@ function AccountManagement({ onClose }) {
       </Division>
     </>
   );
-}
+});
 
-const ProfileImg = styled.img`
+const ProfileImg = styled(LazyLoadImage)`
   width: 60px;
   border-radius: 50%;
   margin-left: 180px;

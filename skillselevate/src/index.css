@@ -3,9 +3,15 @@
 
 body{
     background-color: #cdc9f3;
+    overflow-y:auto;
 }
 
 html {
     scroll-behavior: smooth;
-  }
+}
+::-webkit-scrollbar {
+    width: 0;  /* Remove scrollbar space */
+    background: transparent;  /* Optional: just make scrollbar invisible */
+}
+
   
