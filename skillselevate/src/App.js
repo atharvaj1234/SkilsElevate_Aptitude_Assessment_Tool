@@ -4,7 +4,6 @@ import LandingPage from './LandingPage';
 import Dashboard from './Dashboard';
 import TestPage from './Test';
 import Practice from './Practice';
-import Assesment from './Assesment';
 import AddQuestionForm from './Upload'
 
 function App() {
@@ -16,7 +15,6 @@ function App() {
         <Route path="/test" element={<TestPage/>} />
         <Route path="/practice" element={<Practice/>} />
         <Route path="/admin" element={<AddQuestionForm/>} />
-        <Route path="/Assesment" element={<Assesment/>} />
       </Routes>
     </Router>
   );

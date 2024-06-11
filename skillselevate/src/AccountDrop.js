@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState} from "react";
 import styled from "styled-components";
 import { auth, db, logout } from "./firebase";
 import { query, collection, getDocs, where } from "firebase/firestore";
@@ -7,11 +7,11 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 
 
-  const AccountManagement = React.memo(({ onClose }) => {
+  const AccountManagement = ({ onClose }) => {
   // eslint-disable-next-line
   const [user, loading, error] = useAuthState(auth);
   let [data, setName] = useState("");
-  const fetchUserName = useMemo(() => async () => {
+  const fetchUserName = async () => {
     try {
       const q = query(collection(db, "users"), where("uid", "==", user?.uid));
       const doc = await getDocs(q);
@@ -21,7 +21,7 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
       console.error(err);
       alert("An error occured while fetching user data");
     }
-  });
+  };
   useEffect(() => {
     fetchUserName();
     // eslint-disable-next-line
@@ -50,7 +50,7 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
       </Division>
     </>
   );
-});
+};
 
 const ProfileImg = styled(LazyLoadImage)`
   width: 60px;

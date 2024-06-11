@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef} from "react";
 import styled from "styled-components";
 import { auth, db } from "./firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -65,7 +65,7 @@ function QuizComponent() {
     // eslint-disable-next-line
   }, [time]);
 
-  const getdata = useMemo(() => async () => {
+  const getdata = async () => {
     try {
       const q = query(collection(db, "users"), where("uid", "==", user?.uid));
       const doc1 = await getDocs(q);
@@ -83,7 +83,7 @@ function QuizComponent() {
     } catch (err) {
       console.error(err);
     }
-  });
+  };
 
   const navigate = useNavigate();
   const [pro, setPro] = useState(0);
@@ -181,7 +181,7 @@ function QuizComponent() {
     }
   };
 
-  const updateTest = useMemo(() => async () => {
+  const updateTest = async () => {
     try {
       const q = query(collection(db, "users"), where("uid", "==", user?.uid));
       const doc1 = await getDocs(q);
@@ -203,7 +203,7 @@ function QuizComponent() {
     } catch (error) {
       console.error("Error updating user profile:", error);
     }
-  });
+  };
 
 
   const handlePreviousClick = () => {

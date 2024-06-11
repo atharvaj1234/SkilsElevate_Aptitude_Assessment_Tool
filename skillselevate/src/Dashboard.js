@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import AccountDrop from "./AccountDrop";
 import PersonlizationProfile from "./PersonlizeProfile";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -71,7 +71,7 @@ const Category = [
     ],
   },
 ];
-const Dashboard = React.memo(() => {
+const Dashboard = () => {
   const [showDrop, setShowDrop] = useState(false);
   const [user, loading, error] = useAuthState(auth);
   const [showPersonlization, setShowPersonlization] = useState(false);
@@ -97,7 +97,7 @@ const Dashboard = React.memo(() => {
       }, {})
     : testInfos;
 
-  const fetchUserName = useMemo(() => async () => {
+  const fetchUserName = async () => {
     try {
       const q = query(collection(db, "users"), where("uid", "==", user?.uid));
       const doc = await getDocs(q);
@@ -116,9 +116,9 @@ const Dashboard = React.memo(() => {
       console.error(err);
       alert("An error occured while fetching user data");
     }
-  });
+  };
 
-  const getdata = useMemo(() => async () => {
+  const getdata = async () => {
     try {
       const q = query(collection(db, "users"), where("uid", "==", user?.uid));
       const doc1 = await getDocs(q);
@@ -136,7 +136,7 @@ const Dashboard = React.memo(() => {
     } catch (err) {
       console.error(err);
     }
-  });
+  };
 
   useEffect(() => {
     if (loading) return;
@@ -292,7 +292,7 @@ const Dashboard = React.memo(() => {
       </SecondarySection>
     </Wrapper>
   );
-});
+};
 
 const Overlay = styled.div`
   position: fixed;
