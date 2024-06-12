@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef} from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { auth, db } from "./firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -33,7 +33,6 @@ function QuizComponent() {
   const location = useLocation();
   const [categoryData, setCategoryData] = useState([]);
   const testId = location.state?.testId;
-  const componentMounted = useRef(false);
   const [correctanswers, setcorrectanswers] = useState([]);
   const [user, loading, error] = useAuthState(auth);
   const [time, setTimer] = useState(0);
@@ -52,38 +51,38 @@ function QuizComponent() {
   ]);
 
   useEffect(() => {
-    if (!componentMounted.current) {
-      componentMounted.current = true;
-    } else {
-      if (loading) return;
-      if (!user) return navigate("/");
-      if (error) console.log(error);
-      getdata();
-      const cleanup = startTimer();
-      return cleanup;
-    }
-    // eslint-disable-next-line
-  }, [time]);
+    const getTestData = async () => {
+      try {
+        if (loading) return;
+        if (!user) return;
+        if (error) console.log(error);
 
-  const getdata = async () => {
-    try {
-      const q = query(collection(db, "users"), where("uid", "==", user?.uid));
-      const doc1 = await getDocs(q);
-      const data = doc1.docs[0].data();
-      const docRef = doc(db, "tests", data.exam);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        let fetched = docSnap.data();
-        setQuestions(fetched[testId].question);
-        setcorrectanswers(fetched[testId].question.map((q) => q.correctanswer));
-        setTimer(parseInt(fetched[testId].time));
-      } else {
-        console.log("No such document!");
+        const q = query(collection(db, "users"), where("uid", "==", user?.uid));
+        const doc1 = await getDocs(q);
+        const data = doc1.docs[0].data();
+        const docRef = doc(db, "tests", data.exam);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const fetched = docSnap.data();
+          setQuestions(fetched[testId].question);
+          setcorrectanswers(
+            fetched[testId].question.map((q) => q.correctanswer)
+          );
+          setTimer(parseInt(fetched[testId].time));
+        } else {
+          console.log("No such document!");
+        }
+      } catch (err) {
+        console.error(err);
       }
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    };
+
+    getTestData();
+    const cleanup = startTimer();
+    return cleanup;
+    // eslint-disable-next-line
+  }, [user, loading, error, testId, time]);
 
   const navigate = useNavigate();
   const [pro, setPro] = useState(0);
@@ -93,7 +92,7 @@ function QuizComponent() {
   const [startTime, setStartTime] = useState(Date.now());
   const [Score, setScore] = useState(0);
   const [Percentage, setPercentage] = useState(0);
-  const [categoryAnswers , setCategoryWiseAnswers] = useState({});
+  const [categoryAnswers, setCategoryWiseAnswers] = useState({});
   const [timeTaken, setTimeTaken] = useState(Array(questions.length).fill(0));
 
   const checkAnswers = () => {
@@ -158,7 +157,7 @@ function QuizComponent() {
     const updatedAnswers = [...answers];
     updatedAnswers[currentQuestionIndex] = option.label;
     setAnswers(updatedAnswers);
-    if(selectedOption === null){
+    if (selectedOption === null) {
       setPro((prevPro) => prevPro + (1 / questions.length) * 100);
       attemptedOptions++;
     }
@@ -196,7 +195,7 @@ function QuizComponent() {
 
         // Update the existing document with the selected exam
         await updateDoc(userDocRef, {
-          userdata:{CurrentTest: data.userdata.CurrentTest + 1},
+          userdata: { CurrentTest: data.userdata.CurrentTest + 1 },
         });
         console.log("User profile updated successfully");
       }
@@ -204,7 +203,6 @@ function QuizComponent() {
       console.error("Error updating user profile:", error);
     }
   };
-
 
   const handlePreviousClick = () => {
     if (currentQuestionIndex > 0) {
@@ -216,55 +214,55 @@ function QuizComponent() {
     }
   };
 
+  const handleTestCompletion = () => {
+    const results = answers.map(
+      (answer, index) => answer === correctanswers[index]
+    );
+    const categoryWiseAnswers = {};
+    const averageTimes = checkAnswers();
+    setCategoryData(averageTimes); // Update categoryData state
+    const score = results.filter((result) => result).length; // Count the number of correct answers
+    setScore(score);
+    const totalQuestions = results.length; // Total number of questions
 
+    // Iterate through questions and update categoryWiseAnswers
+    questions.forEach((question, index) => {
+      const category = question.category;
+      const isCorrect = results[index];
 
-const handleTestCompletion = () => {
-  const results = answers.map(
-    (answer, index) => answer === correctanswers[index]
-  );
-  const categoryWiseAnswers = {};
-  const averageTimes = checkAnswers();
-  setCategoryData(averageTimes); // Update categoryData state
-  const score = results.filter((result) => result).length; // Count the number of correct answers
-  setScore(score);
-  const totalQuestions = results.length; // Total number of questions
+      if (!categoryWiseAnswers[category]) {
+        categoryWiseAnswers[category] = {
+          correct: 0,
+          total: 0,
+        };
+      }
 
-  // Iterate through questions and update categoryWiseAnswers
-  questions.forEach((question, index) => {
-    const category = question.category;
-    const isCorrect = results[index];
+      categoryWiseAnswers[category].total++;
+      if (isCorrect) {
+        categoryWiseAnswers[category].correct++;
+      }
+      setCategoryWiseAnswers(categoryWiseAnswers);
+    });
 
-    if (!categoryWiseAnswers[category]) {
-      categoryWiseAnswers[category] = {
-        correct: 0,
-        total: 0,
-      };
-    }
+    // Log category-wise correct and total answers
+    Object.entries(categoryWiseAnswers).forEach(
+      ([category, { correct, total }]) => {
+        console.log(`${category}: ${correct}/${total}`);
+      }
+    );
 
-    categoryWiseAnswers[category].total++;
-    if (isCorrect) {
-      categoryWiseAnswers[category].correct++;
-    }
-    setCategoryWiseAnswers(categoryWiseAnswers)
-  });
+    console.log(`Score: ${score}/${totalQuestions}`); // Print the score
 
-  // Log category-wise correct and total answers
-  Object.entries(categoryWiseAnswers).forEach(([category, { correct, total }]) => {
-    console.log(`${category}: ${correct}/${total}`);
-  });
-
-  console.log(`Score: ${score}/${totalQuestions}`); // Print the score
-
-  // Optionally, you can also calculate and print the percentage of correct answers
-  const percentage = (score / totalQuestions) * 100;
-  setPercentage(percentage.toFixed(2));
-  console.log(`Percentage: ${percentage.toFixed(2)}%`);
-  console.log(
-    "Average time per question:",
-    (timeTaken.reduce((a, b) => a + b) / questions.length).toFixed(2)
-  );
-  console.log("Detailed Results:", averageTimes);
-};
+    // Optionally, you can also calculate and print the percentage of correct answers
+    const percentage = (score / totalQuestions) * 100;
+    setPercentage(percentage.toFixed(2));
+    console.log(`Percentage: ${percentage.toFixed(2)}%`);
+    console.log(
+      "Average time per question:",
+      (timeTaken.reduce((a, b) => a + b) / questions.length).toFixed(2)
+    );
+    console.log("Detailed Results:", averageTimes);
+  };
 
   const isOptionSelected = (option) => {
     return selectedOption?.label === option.label;
@@ -338,7 +336,7 @@ const handleTestCompletion = () => {
 
   return testCompleted ? (
     <Block>
-       <Circle
+      <Circle
         loading="lazy"
         src="https://cdn.builder.io/api/v1/image/assets/TEMP/fc1353b406cdc5577bcbd645528cc7cc9e348b0c8058cb65d083795bdd79ab29?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
         alt="First image"
@@ -351,38 +349,47 @@ const handleTestCompletion = () => {
       <Header>
         <TimeBox>Time Taken: 20:00</TimeBox>
         <SubHeader>Assessment Test 1</SubHeader>
-        <FinishButton onClick={()=>navigate('/dashboard')}>Finish</FinishButton>
+        <FinishButton onClick={() => navigate("/dashboard")}>
+          Finish
+        </FinishButton>
       </Header>
       <FlexContainer>
         <Column>
-        <Graph>
-          <h3>Detailed Report</h3>
-          <Bar data={data} options={options} />
-          <LogsContainer>
-          <h3>Logs</h3>
-          {Object.entries(categoryAnswers).map(([category, { correct, total }]) => (
-            <LogItem key={category}>
-              <CategoryName>{category}:</CategoryName>
-              <CorrectTotal>
-                {correct}/{total}
-              </CorrectTotal>
-            </LogItem>
-          ))}
-          <LogItem>
-            <CategoryName>Score:</CategoryName>
-            <CorrectTotal>{Score}/{questions.length}</CorrectTotal>
-          </LogItem>
-          <LogItem>
-            <CategoryName>Percentage:</CategoryName>
-            <CorrectTotal>{Percentage}%</CorrectTotal>
-          </LogItem>
-          <LogItem>
-            <CategoryName>Average time per question:</CategoryName>
-            <CorrectTotal>
-              {(timeTaken.reduce((a, b) => a + b) / questions.length).toFixed(2)} seconds
-            </CorrectTotal>
-          </LogItem>
-        </LogsContainer>
+          <Graph>
+            <h3>Detailed Report</h3>
+            <Bar data={data} options={options} />
+            <LogsContainer>
+              <h3>Logs</h3>
+              {Object.entries(categoryAnswers).map(
+                ([category, { correct, total }]) => (
+                  <LogItem key={category}>
+                    <CategoryName>{category}:</CategoryName>
+                    <CorrectTotal>
+                      {correct}/{total}
+                    </CorrectTotal>
+                  </LogItem>
+                )
+              )}
+              <LogItem>
+                <CategoryName>Score:</CategoryName>
+                <CorrectTotal>
+                  {Score}/{questions.length}
+                </CorrectTotal>
+              </LogItem>
+              <LogItem>
+                <CategoryName>Percentage:</CategoryName>
+                <CorrectTotal>{Percentage}%</CorrectTotal>
+              </LogItem>
+              <LogItem>
+                <CategoryName>Average time per question:</CategoryName>
+                <CorrectTotal>
+                  {(
+                    timeTaken.reduce((a, b) => a + b) / questions.length
+                  ).toFixed(2)}{" "}
+                  seconds
+                </CorrectTotal>
+              </LogItem>
+            </LogsContainer>
           </Graph>
         </Column>
         <Column>
@@ -522,16 +529,16 @@ const CategoryName = styled.span`
 const CorrectTotal = styled.span``;
 
 const Block = styled.div`
-position: absolute;
-width:100%;
-top: 0;
-left: 0;
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
 `;
 
 const Graph = styled.div`
   z-index: 3;
   padding: 20px;
-  background-color:#FFFE;
+  background-color: #fffe;
   margin: 20px;
   border-radius: 20px;
 `;

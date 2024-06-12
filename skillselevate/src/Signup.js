@@ -245,7 +245,6 @@ function Signup({ onClose }) {
                       placeholder="Password"
                     />
                   </InputGroup>
-                  /
                   {/* <InputGroup marginTop="5%">
                       <Icon
                         loading="lazy"

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import styled from "styled-components";
 import Signup from './Signup'; 
 
@@ -437,6 +437,10 @@ const Overlay = styled.div`
 
 function LandingPage() {
   const [showSignup, setShowSignup] = useState(false);
+
+  useEffect(() => {
+    document.title = 'SkillsElevate';
+  })
 
   const handleCloseOutsideClick = (event) => {
     if (event.target === event.currentTarget) {

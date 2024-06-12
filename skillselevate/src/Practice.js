@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useNavigate } from "react-router-dom";
@@ -131,19 +131,18 @@ function QuizComponent() {
     }
   };
 
-  const componentMounted = useRef(false);
-
   useEffect(() => {
-    if (!componentMounted.current) {
-      componentMounted.current = true;
-    } else {
-      // Call fetchNewQuestion only if the component has mounted
-      // if (loading) return;
+    const initializeQuiz = async () => {
+      if (loading) return;
       if (!user) return navigate("/");
       if (error) console.log(error);
-      getdata();
-      fetchNewQuestion();
-    }
+
+      await getdata(); // Ensure user data is fetched before fetching the question
+      await fetchNewQuestion(); // Fetch the first question after data is ready
+    };
+    initializeQuiz();
+
+    document.title = "Practice";
     // eslint-disable-next-line
   }, [user, loading]);
 
@@ -197,7 +196,7 @@ function QuizComponent() {
 
   const fetchNewQuestion = async () => {
     setshowloading(true);
-    console.log(currentCategory,data.exam)
+    console.log(currentCategory, data.exam);
     const prompt = `Generate a multiple-choice question in the category of ${currentCategory} for students appearing for ${data.exam} Exam. If the question contains mathematical symbols then Provide symbols for mathematical expressions in pure Latex form, and start math with Tilde (\`) symbol. Strictly Provide the response in the following Format including spaces and newlines, don't respond anything else:
     
     Question: [Full question]
@@ -222,13 +221,13 @@ function QuizComponent() {
 
   const parseGeneratedQuestion = (text) => {
     const lines = text.trim().split("\n");
-  
+
     // Initialize variables to store the parsed data
     let prompt = "";
     const options = [];
     let correctAnswer = "";
     let explanation = "";
-  
+
     // Iterate through each line to find and extract the necessary information
     lines.forEach((line, index) => {
       if (line.startsWith("Question: ")) {
@@ -247,10 +246,10 @@ function QuizComponent() {
         explanation = line.replace("Explanation: ", "");
       }
     });
-  
+
     // Log the correct answer for debugging purposes
     console.log(correctAnswer);
-  
+
     // Return the parsed question object
     return {
       id: currentQuestionIndex + 1,
@@ -260,7 +259,7 @@ function QuizComponent() {
       explanation,
     };
   };
-  
+
   const isContinueDisabled = selectedOption === null;
 
   const MotivationalLines = [
