@@ -1,4 +1,5 @@
 import { initializeApp } from "firebase/app";
+import { getStorage } from 'firebase/storage';
 import {
   GoogleAuthProvider,
   getAuth,
@@ -26,11 +27,13 @@ const firebaseConfig = {
   measurementId: "G-WHW2NE1HRP",
 };
 
+
 const defaultprofile = "https://static.vecteezy.com/system/resources/previews/005/544/718/non_2x/profile-icon-design-free-vector.jpg";
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
+const storage = getStorage(app);
 const signInWithGoogle = async () => {
   try {
     const res = await signInWithPopup(auth, googleProvider);
@@ -45,8 +48,10 @@ const signInWithGoogle = async () => {
         email: user.email,
         profilepicture: user.photoURL,
         exam: null, 
+        profilescore: 0,
         userdata: {
           CurrentTest: 0,
+          testdata: [],
         },
       });
     }
@@ -75,8 +80,10 @@ const registerWithEmailAndPassword = async (name, email, password) => {
       email,
       profilepicture: defaultprofile,
       exam: null,
+      profilescore: 0,
       userdata: {
         CurrentTest: 0,
+        testdata: [],
       },
     });
   } catch (err) {
@@ -98,6 +105,7 @@ const logout = () => {
 };
 
 export {
+  storage,
   auth,
   db,
   signInWithGoogle,

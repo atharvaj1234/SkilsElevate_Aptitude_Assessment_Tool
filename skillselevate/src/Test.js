@@ -18,6 +18,34 @@ import {
   Legend,
 } from "chart.js";
 
+const getBadgeData = (percentage) => {
+  if (percentage >= 75) {
+    return {
+      badgeUrl:
+        "https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/Badges%2FBeginner%2FScholar.png?alt=media&token=f66cd703-5c7f-4a02-b6d8-d3b821b9f885",
+      badgeValue: 100,
+    };
+  } else if (percentage >= 50) {
+    return {
+      badgeUrl:
+        "https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/Badges%2FBeginner%2FLearner.png?alt=media&token=07a01ab5-25f7-4648-811c-bfae551ef9a6",
+      badgeValue: 75,
+    };
+  } else if (percentage >= 25) {
+    return {
+      badgeUrl:
+        "https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/Badges%2FBeginner%2FRookie.png?alt=media&token=4904c82e-1e23-477d-a152-650e5d2cae2b",
+      badgeValue: 50,
+    };
+  } else {
+    return {
+      badgeUrl:
+        "https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/Badges%2FBeginner%2FBeginner.png?alt=media&token=8bec5e34-39c6-402c-b8e0-954d4845baf6",
+      badgeValue: 25,
+    };
+  }
+};
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -31,8 +59,10 @@ let attemptedOptions = 0;
 
 function QuizComponent() {
   const location = useLocation();
+  const [totalTimeTaken, setTotalTimeTaken] = useState(0);
   const [categoryData, setCategoryData] = useState([]);
   const testId = location.state?.testId;
+  const testTitle = location.state?.testTitle;
   const [correctanswers, setcorrectanswers] = useState([]);
   const [user, loading, error] = useAuthState(auth);
   const [time, setTimer] = useState(0);
@@ -94,6 +124,9 @@ function QuizComponent() {
   const [Percentage, setPercentage] = useState(0);
   const [categoryAnswers, setCategoryWiseAnswers] = useState({});
   const [timeTaken, setTimeTaken] = useState(Array(questions.length).fill(0));
+  const [badgeUrl, setBadgeUrl] = useState("");
+  // eslint-disable-next-line
+  const [overallStartTime, setOverallStartTime] = useState(Date.now());
 
   const checkAnswers = () => {
     const results = answers.map(
@@ -175,32 +208,7 @@ function QuizComponent() {
     } else {
       console.log("All questions completed");
       handleTestCompletion();
-      updateTest();
       setTestCompleted(true);
-    }
-  };
-
-  const updateTest = async () => {
-    try {
-      const q = query(collection(db, "users"), where("uid", "==", user?.uid));
-      const doc1 = await getDocs(q);
-      const data = doc1.docs[0].data();
-      const usersCollectionRef = collection(db, "users");
-      const userDocQuery = await getDocs(
-        query(usersCollectionRef, where("uid", "==", user?.uid))
-      );
-
-      if (!userDocQuery.empty) {
-        const userDocRef = userDocQuery.docs[0].ref;
-
-        // Update the existing document with the selected exam
-        await updateDoc(userDocRef, {
-          userdata: { CurrentTest: data.userdata.CurrentTest + 1 },
-        });
-        console.log("User profile updated successfully");
-      }
-    } catch (error) {
-      console.error("Error updating user profile:", error);
     }
   };
 
@@ -214,7 +222,7 @@ function QuizComponent() {
     }
   };
 
-  const handleTestCompletion = () => {
+  const handleTestCompletion = async () => {
     const results = answers.map(
       (answer, index) => answer === correctanswers[index]
     );
@@ -257,11 +265,65 @@ function QuizComponent() {
     const percentage = (score / totalQuestions) * 100;
     setPercentage(percentage.toFixed(2));
     console.log(`Percentage: ${percentage.toFixed(2)}%`);
+
+    // Calculate total time taken
+    const endTime = Date.now(); // Capture the end time
+    const totalTime = (endTime - overallStartTime) / 1000; // Convert milliseconds to seconds
+    setTotalTimeTaken(totalTime);
+
     console.log(
       "Average time per question:",
       (timeTaken.reduce((a, b) => a + b) / questions.length).toFixed(2)
     );
-    console.log("Detailed Results:", averageTimes);
+
+    try {
+      const q = query(collection(db, "users"), where("uid", "==", user?.uid));
+      const doc1 = await getDocs(q);
+      const data = doc1.docs[0].data();
+      const usersCollectionRef = collection(db, "users");
+      const userDocQuery = await getDocs(
+        query(usersCollectionRef, where("uid", "==", user?.uid))
+      );
+
+      const testData = {
+        score,
+        percentage,
+        totalTime,
+        averageTimePerQuestion: (
+          timeTaken.reduce((a, b) => a + b) / questions.length
+        ).toFixed(2),
+        categoryData: averageTimes,
+      };
+      const { badgeUrl, badgeValue } = getBadgeData(percentage);
+      setBadgeUrl(badgeUrl);
+
+      if (!userDocQuery.empty) {
+        const userDocRef = userDocQuery.docs[0].ref;
+        const existingTestData = data.userdata.testdata || [];
+        const currentScore = data.profilescore || 0;
+
+        // Calculate the new score by adding the badge value
+        const newScore = currentScore + badgeValue;
+
+        // Update the user's score in the database
+        await updateDoc(userDocRef, {
+          profilescore: newScore,
+        });
+        // Update the existing document with the selected exam
+        await updateDoc(userDocRef, {
+          userdata: { CurrentTest: data.userdata.CurrentTest + 1 },
+        });
+        await updateDoc(userDocRef, {
+          "userdata.testdata": [...existingTestData, testData],
+        });
+        await updateDoc(userDocRef, {
+          "userdata.badgeUrl": badgeUrl,
+        });
+        console.log("User profile updated successfully");
+      }
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+    }
   };
 
   const isOptionSelected = (option) => {
@@ -338,17 +400,26 @@ function QuizComponent() {
     <Block>
       <Circle
         loading="lazy"
-        src="https://cdn.builder.io/api/v1/image/assets/TEMP/fc1353b406cdc5577bcbd645528cc7cc9e348b0c8058cb65d083795bdd79ab29?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+        src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2Fcircle.png?alt=media&token=f0b79718-d8a9-43d3-8db0-aa307eec5d81"
         alt="First image"
       />
       <Cube
         loading="lazy"
-        src="https://cdn.builder.io/api/v1/image/assets/TEMP/e8afa8948546c2c3fbfc70dd781a98cc5945478848c882ac206981811937afcc?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+        src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2Fcube.png?alt=media&token=72a182b5-e403-4920-81eb-db2966e82ccd"
         alt="Second image"
       />
       <Header>
-        <TimeBox>Time Taken: 20:00</TimeBox>
-        <SubHeader>Assessment Test 1</SubHeader>
+        <TimeBox>
+          🕜{" "}
+          {parseInt(totalTimeTaken / 60)
+            .toString()
+            .padStart(2, "0")}
+          :
+          {parseInt(totalTimeTaken % 60)
+            .toString()
+            .padStart(2, "0")}
+        </TimeBox>
+        <SubHeader>{testTitle}</SubHeader>
         <FinishButton onClick={() => navigate("/dashboard")}>
           Finish
         </FinishButton>
@@ -358,8 +429,10 @@ function QuizComponent() {
           <Graph>
             <h3>Detailed Report</h3>
             <Bar data={data} options={options} />
+          </Graph>
+          <Evaluationdiv>
             <LogsContainer>
-              <h3>Logs</h3>
+              <h3>Evaluation</h3>
               {Object.entries(categoryAnswers).map(
                 ([category, { correct, total }]) => (
                   <LogItem key={category}>
@@ -370,12 +443,6 @@ function QuizComponent() {
                   </LogItem>
                 )
               )}
-              <LogItem>
-                <CategoryName>Score:</CategoryName>
-                <CorrectTotal>
-                  {Score}/{questions.length}
-                </CorrectTotal>
-              </LogItem>
               <LogItem>
                 <CategoryName>Percentage:</CategoryName>
                 <CorrectTotal>{Percentage}%</CorrectTotal>
@@ -390,13 +457,31 @@ function QuizComponent() {
                 </CorrectTotal>
               </LogItem>
             </LogsContainer>
-          </Graph>
+            <Section>
+              <Scorebox>
+                <Scored>
+                  {Score}/{questions.length}
+                </Scored>
+                <ProfileImg
+                  loading="lazy"
+                  src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2FIcons%2Fscore.svg?alt=media&token=f6989861-9f6e-44af-9ed7-3e5bf31f0c70"
+                  alt="Profile"
+                />
+                <Description>Your Score</Description>
+              </Scorebox>
+
+              <Badgebox>
+                <Badge src={badgeUrl} alt="Badge" />
+                <Description>Badge Earned</Description>
+              </Badgebox>
+            </Section>
+          </Evaluationdiv>
         </Column>
         <Column>
           <InfoContainer>
             <Icon
               loading="lazy"
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/f152390cbe0d2ad633c12d505aacd702899e0f237261f85333c087de07db5aef?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+              src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2FIcons%2Fleftarrow.png?alt=media&token=7e7d200d-adf9-4874-b8d4-5c97d9fea77b"
               alt="Info Icon"
               onClick={() => {
                 currentQuestionIndex > 0
@@ -438,7 +523,7 @@ function QuizComponent() {
             </QuizSection1>
             <Icon
               loading="lazy"
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/cbda51264997c38a4918cc5d8019469234affea2b398cf5c8800fd9205f3f25a?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+              src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2FIcons%2Frightarrow.png?alt=media&token=400417f6-39d7-4886-a568-61841c2a5ee2"
               alt="Info Icon"
               onClick={() => {
                 currentQuestionIndex < questions.length - 1
@@ -454,19 +539,19 @@ function QuizComponent() {
     <MainContainer>
       <Circle
         loading="lazy"
-        src="https://cdn.builder.io/api/v1/image/assets/TEMP/fc1353b406cdc5577bcbd645528cc7cc9e348b0c8058cb65d083795bdd79ab29?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+        src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2Fcircle.png?alt=media&token=f0b79718-d8a9-43d3-8db0-aa307eec5d81"
         alt="First image"
       />
       <Cube
         loading="lazy"
-        src="https://cdn.builder.io/api/v1/image/assets/TEMP/e8afa8948546c2c3fbfc70dd781a98cc5945478848c882ac206981811937afcc?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+        src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2Fcube.png?alt=media&token=72a182b5-e403-4920-81eb-db2966e82ccd"
         alt="Second image"
       />
       <MainSection>
         <Header>
           <Timer id="timer">🕜 </Timer>
-          <SubHeader>Test</SubHeader>
-          <Exitbtn onClick={() => navigate("/dashboard")}>X</Exitbtn>
+          <SubHeader>{testTitle}</SubHeader>
+          <Exitbtn onClick={() => navigate("/dashboard")}> X</Exitbtn>
         </Header>
         <QuizSection>
           <QuizPrompt>{questions[currentQuestionIndex].question}</QuizPrompt>
@@ -509,11 +594,98 @@ function QuizComponent() {
   );
 }
 
+const Badge = styled.img`
+  aspect-ratio: 1;
+  width: 100px;
+  mix-blend-mode: multiply;
+`;
+
+const Evaluationdiv = styled.div`
+  display: flex;
+  flex-direction: row;
+  padding: 20px;
+  gap: 10px;
+  @media (max-width: 570px) {
+    flex-wrap: wrap;
+  }
+`;
+
+const Section = styled.section`
+  display: flex;
+  margin-top: 12px;
+  width: 20%;
+  flex-direction: column;
+  color: var(--neutral-white, #fff);
+  gap: 10px;
+  @media (max-width: 570px) {
+    flex-direction: row;
+    width: 100%;
+  }
+`;
+
+const Scorebox = styled.header`
+  padding: 5px 10px;
+  border-radius: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  background-color: var(--color-primary, #6a5ae0);
+  display: flex;
+  width: 100%;
+  align-items: center;
+  font-size: 32px;
+  font-weight: 700;
+  white-space: nowrap;
+  line-height: 150%;
+  @media (max-width: 570px) {
+    font-size: 24px;
+  }
+`;
+
+const Badgebox = styled.header`
+  padding: 5px 10px;
+  border-radius: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  background-color: var(--color-primary, #fff);
+  color: #000;
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  font-size: 32px;
+  font-weight: 700;
+  white-space: nowrap;
+  line-height: 150%;
+`;
+
+const Scored = styled.div`
+  font-family: Rubik, sans-serif;
+  flex-grow: 1;
+  flex-basis: auto;
+`;
+
+const ProfileImg = styled.img`
+  aspect-ratio: 1.12;
+  width: 47px;
+  object-fit: auto;
+  object-position: center;
+`;
+
+const Description = styled.p`
+  margin-top: 10px;
+  font: 400 16px/140% Rubik, sans-serif;
+  @media (max-width: 570px) {
+    font-size: 14px;
+  }
+`;
+
 const LogsContainer = styled.div`
   background-color: #fff;
   padding: 20px;
+  width: 60%;
   border-radius: 10px;
-  margin-top: 20px;
+  @media (max-width: 570px) {
+    width: 100%;
+  }
 `;
 
 const LogItem = styled.div`
@@ -552,32 +724,35 @@ const Icon = styled.img`
   cursor: pointer;
 `;
 
-const InfoContainer = styled.section`
+const InfoContainer = styled.div`
   display: flex;
   flex-direction: row;
   gap: 20px;
   padding: 20px;
   position: relative;
-  min-height: 730px;
-  align-self: stretch;
-  color: #060710;
-  margin: auto 0;
-  padding: 31px 38px 17px 18px;
+  align-items: center;
+  justify-content: center;
+  width: 70%;
+  padding: 30px;
 
-  @media (max-width: 991px) {
-    margin-top: 40px;
-    flex-wrap: wrap;
-    padding-right: 20px;
+  @media (max-width: 1280px) {
+    margin-bottom: 10px;
+    width: 100%;
+    padding: 10px;
   }
 `;
 
 const FlexContainer = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: 20px;
+  align-items: center;
+  margin-bottom: 20px;
+  align-content: space-around;
+  justify-content: space-evenly;
   margin-top: 100px;
-  @media (max-width: 991px) {
-    flex-direction: column;
-    align-items: stretch;
+  @media (max-width: 1280px) {
+    flex-direction: column-reverse;
     gap: 0px;
   }
 `;
@@ -586,11 +761,27 @@ const Column = styled.div`
   display: flex;
   flex-direction: column;
   line-height: normal;
-  width: 57%;
+  width: 95%;  
+  max-width:45%;
 
-  @media (max-width: 991px) {
+  @media (max-width: 1280px) {
+    max-width: 90%;
     width: 100%;
   }
+  
+  &:First-Child{
+  background-color: rgba(248, 249, 249 , 0.5);
+  border-radius: 10px;
+  z-index:2;
+  margin: 0 50px;
+  Backdrop-filter: blur(5px);
+    @media (max-width: 1280px) {
+      margin: 0 10px;
+  }
+  }
+
+  }
+
 `;
 
 const FinishButton = styled.button`
@@ -603,10 +794,13 @@ const FinishButton = styled.button`
   padding: 14px 41px;
   font-size: 22px;
   font-family: Quattrocento Sans, -apple-system, Roboto, Helvetica, sans-serif;
+  cursor: pointer;
 
-  @media (max-width: 991px) {
-    white-space: initial;
-    padding: 0 20px;
+  @media (max-width: 1280px) {
+      @media (max-width: 1280px){
+    font-size: 14px;
+    border-radius: 5px;
+    padding: 5px 20px;
   }
 `;
 
@@ -619,12 +813,21 @@ const TimeBox = styled.time`
   color: #0c092a;
   padding: 8px 12px;
   font: 500 16px/1.5 Rubik, sans-serif;
+
+  @media (max-width: 1280px) {
+    font-size: 14px;
+    padding: 5px;
+    border-radius: 5px;
+  }
 `;
 
 const ProgressHolder = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
+  @media (max-width: 570px) {
+    width: 40%;
+  }
 `;
 
 const Progresstext = styled.span`
@@ -638,6 +841,9 @@ const Wrapper = styled.div`
   height: 15px;
   background-color: lightgrey;
   border-radius: 7px;
+  @media (max-width: 570px) {
+    height: 10px;
+  }
 `;
 
 const Progress = styled.div`
@@ -647,6 +853,10 @@ const Progress = styled.div`
   border-color: white;
   border-width: 2px;
   width: ${(props) => `${props.progress}%`};
+
+  @media (max-width: 570px) {
+    height: 10px;
+  }
 `;
 
 const Circle = styled.img`
@@ -711,15 +921,17 @@ const Header = styled.header`
 
 const Timer = styled.h2`
   background-color: #8475ef;
+  display: flex;
+  flex-wrap: nowrap;
   color: #fff;
   padding: 11px 18px;
   border-radius: 6px;
   font-size: 18px;
   line-height: 1;
   white-space: nowrap;
-  @media (max-width: 991px) {
-    white-space: initial;
+  @media (max-width: 570px) {
     font-size: 14px;
+    padding: 10px;
   }
 `;
 
@@ -728,7 +940,7 @@ const SubHeader = styled.h1`
   font-size: 32px;
   font-family: Hina Mincho, sans-serif;
   line-height: 0.75;
-  @media (max-width: 991px) {
+  @media (max-width: 1280px) {
     font-size: 22px;
   }
 `;
@@ -746,8 +958,7 @@ const Exitbtn = styled.div`
   font-size: 22px;
   cursor: pointer;
 
-  @media (max-width: 991px) {
-    white-space: initial;
+  @media (max-width: 570px) {
     font-size: 20px;
   }
 `;
@@ -766,13 +977,11 @@ const QuizSection = styled.div`
   width: 70%;
   max-width: 768px;
   height: 80vh;
-  max-width: 1440px;
+  max-width: 1280px;
   font-weight: 700;
   color: #060710;
   font-family: "Quattrocento", sans-serif;
-  @media (max-width: 991px) {
-    max-width: 100%;
-    margin-top: 40px;
+  @media (max-width: 1280px) {
   }
 `;
 
@@ -785,15 +994,13 @@ const QuizSection1 = styled.div`
   flex-direction: column;
   align-items: center;
   padding: 40px;
-  width: 70%;
-  max-width: 768px;
-  height: 70%;
   font-weight: 700;
   color: #060710;
+  align-self: center;
   font-family: "Quattrocento", sans-serif;
-  @media (max-width: 991px) {
-    max-width: 100%;
-    margin-top: 40px;
+  @media (max-width: 1280px) {
+    width: 90%;
+    padding: 20px;
   }
 `;
 
@@ -801,7 +1008,7 @@ const QuizPrompt = styled.p`
   font-size: 20px;
   line-height: 1.46;
   text-align: justify;
-  @media (max-width: 991px) {
+  @media (max-width: 1280px) {
     max-width: 100%;
     font-size: 16px;
   }
@@ -822,8 +1029,8 @@ const Option = styled.div`
   &.selected {
     border: 2px solid blue;
   }
-  @media (max-width: 991px) {
-    flex-wrap: wrap;
+  @media (max-width: 570px) {
+    flex-wrap: nowrap;
     padding: 10px;
   }
 `;
@@ -838,8 +1045,7 @@ const OptionLabel = styled.div`
   display: flex;
   font-size: 16px;
 
-  @media (max-width: 991px) {
-    white-space: initial;
+  @media (max-width: 570px) {
     font-size: 14px;
   }
 `;
@@ -849,7 +1055,7 @@ const OptionText = styled.div`
   font-size: 16px;
   line-height: 1.35;
   margin: auto 0;
-  @media (max-width: 991px) {
+  @media (max-width: 570px) {
     white-space: initial;
     font-size: 14px;
   }
@@ -871,8 +1077,8 @@ const NavButton = styled.button`
   border-radius: 8px;
   font-family: "Abhaya Libre", sans-serif;
   cursor: pointer;
-  @media (max-width: 991px) {
-    padding: 20px 40px;
+  @media (max-width: 570px) {
+    padding: 15px 20px;
     white-space: initial;
   }
   &:first-child {
