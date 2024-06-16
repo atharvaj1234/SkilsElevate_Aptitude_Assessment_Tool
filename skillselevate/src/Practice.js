@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import CircularProgress from "@mui/material/CircularProgress";
+import Loader from './components/Loader';
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "./firebase";
 import { query, collection, getDocs, where } from "firebase/firestore";
@@ -291,7 +291,7 @@ function QuizComponent() {
     <MainContainer>
       <Circle
         loading="lazy"
-        src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2Fcircle.png?alt=media&token=f0b79718-d8a9-43d3-8db0-aa307eec5d81"
+        src="https://cdn.builder.io/api/v1/image/assets/TEMP/fc1353b406cdc5577bcbd645528cc7cc9e348b0c8058cb65d083795bdd79ab29?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
         alt="First image"
       />
       <Cube
@@ -300,9 +300,7 @@ function QuizComponent() {
         alt="Second image"
       />
       {showloading && (
-        <Loadder>
-          <CircularProgress />
-        </Loadder>
+        <Loader/>
       )}
       {showDrop && (
         <Motivation className={isContinueDisabled ? "disabled" : "enabled"}>
@@ -413,17 +411,7 @@ const Motivation = styled.div`
   }
 `;
 
-const Loadder = styled.div`
-  display: flex;
-  background: rgba(0, 0, 0, 0.2);
-  position: fixed;
-  width: 100%;
-  height: 100vh;
-  align-items: center;
-  justify-content: center;
-  top: 0;
-  z-index: 3;
-`;
+
 
 const Options = styled.div`
   display: flex;

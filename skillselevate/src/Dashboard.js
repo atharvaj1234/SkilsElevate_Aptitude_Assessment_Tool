@@ -147,6 +147,7 @@ const Dashboard = () => {
   }, [user, loading]);
 
   function TestInfo({ testInfos }) {
+    const curtest = (data.userdata.CurrentTest === 0) ? (1) : (data.userdata.CurrentTest); 
     if (Object.keys(testInfos).length === 0)
       return <p>No Tests Found for the Selected Category</p>;
     const sortedTestInfos = Object.entries(testInfos).sort(
@@ -171,9 +172,9 @@ const Dashboard = () => {
                 <DetailText>Time: {testData.time} minutes</DetailText>
               </InfoDetails>
               {parseInt(testid.replace(/\D/g, "")) <=
-              data.userdata.CurrentTest ? (
+              curtest ? (
                 parseInt(testid.replace(/\D/g, "")) <
-                data.userdata.CurrentTest ? (
+                curtest ? (
                   <StartButton
                     onClick={() =>
                       navigate("/test", { state: { testId: testid , testTitle: testData.title} })
@@ -184,7 +185,7 @@ const Dashboard = () => {
                 ) : (
                   <StartButton
                     onClick={() =>
-                      navigate("/test", { state: { testId: testid } })
+                      navigate("/test", { state: { testId: testid , testTitle: testData.title} })
                     }
                   >
                     Start
@@ -224,7 +225,7 @@ const Dashboard = () => {
       <HeaderBar>
         <HeaderContent>
           <Logo>
-            <TitleLogo>Q SkillsElevate</TitleLogo>
+            <TitleLogo onClick={()=>navigate('/')}>Q SkillsElevate</TitleLogo>
           </Logo>
           <ProfileImg
             onClick={() => setShowDrop(true)}
@@ -408,6 +409,7 @@ const TitleLogo = styled.span`
   color: #4d4d4d;
   font-family: Hina Mincho, sans-serif;
   font-size: 35px;
+  cursor: pointer;
   @media (max-width: 991px) {
     font-size: 35px;
     margin-left: 10px;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Loader from './components/Loader';
 import styled from "styled-components";
 import { auth, db } from "./firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -67,6 +68,7 @@ function QuizComponent() {
   const [user, loading, error] = useAuthState(auth);
   const [time, setTimer] = useState(0);
   const [testCompleted, setTestCompleted] = useState(false);
+  const [contentLoaded, setContentLoaded] = useState(false);
   const [questions, setQuestions] = useState([
     {
       category: " ",
@@ -100,6 +102,7 @@ function QuizComponent() {
             fetched[testId].question.map((q) => q.correctanswer)
           );
           setTimer(parseInt(fetched[testId].time));
+          setContentLoaded(true);
         } else {
           console.log("No such document!");
         }
@@ -127,6 +130,7 @@ function QuizComponent() {
   const [badgeUrl, setBadgeUrl] = useState("");
   // eslint-disable-next-line
   const [overallStartTime, setOverallStartTime] = useState(Date.now());
+
 
   const checkAnswers = () => {
     const results = answers.map(
@@ -209,6 +213,7 @@ function QuizComponent() {
       console.log("All questions completed");
       handleTestCompletion();
       setTestCompleted(true);
+      setContentLoaded(false);
     }
   };
 
@@ -324,6 +329,8 @@ function QuizComponent() {
     } catch (error) {
       console.error("Error updating user profile:", error);
     }
+
+    setContentLoaded(true);
   };
 
   const isOptionSelected = (option) => {
@@ -408,6 +415,7 @@ function QuizComponent() {
         src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2Fcube.png?alt=media&token=72a182b5-e403-4920-81eb-db2966e82ccd"
         alt="Second image"
       />
+      {contentLoaded ? (<>
       <Header>
         <TimeBox>
           🕜{" "}
@@ -478,6 +486,7 @@ function QuizComponent() {
           </Evaluationdiv>
         </Column>
         <Column>
+            
           <InfoContainer>
             <Icon
               loading="lazy"
@@ -490,6 +499,7 @@ function QuizComponent() {
               }}
             />
             <QuizSection1>
+            <h2>Review Your Submission</h2>
               <QuizPrompt>
                 {questions[currentQuestionIndex].question}
               </QuizPrompt>
@@ -534,6 +544,7 @@ function QuizComponent() {
           </InfoContainer>
         </Column>
       </FlexContainer>
+      </>) : (<Loader/>)}
     </Block>
   ) : (
     <MainContainer>
@@ -547,7 +558,8 @@ function QuizComponent() {
         src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2Fcube.png?alt=media&token=72a182b5-e403-4920-81eb-db2966e82ccd"
         alt="Second image"
       />
-      <MainSection>
+      {contentLoaded ? (
+        <MainSection>
         <Header>
           <Timer id="timer">🕜 </Timer>
           <SubHeader>{testTitle}</SubHeader>
@@ -590,6 +602,8 @@ function QuizComponent() {
           </NavButton>
         </Navigation>
       </MainSection>
+      ) : (<Loader/>)}
+
     </MainContainer>
   );
 }

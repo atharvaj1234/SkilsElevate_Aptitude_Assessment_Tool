@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AccountDrop from "./components/AccountDrop";
+import Loader from './components/Loader';
 import styled from "styled-components";
 import { auth, db } from "./firebase";
 import { query, collection, getDocs, where, orderBy } from "firebase/firestore";
@@ -69,7 +70,7 @@ const Dashboard = () => {
         <HeaderBar>
           <HeaderContent>
             <Logo>
-              <TitleLogo>Q SkillsElevate</TitleLogo>
+              <TitleLogo onClick={()=>navigate('/')}>Q SkillsElevate</TitleLogo>
             </Logo>
 
             <ProfileImg
@@ -81,6 +82,7 @@ const Dashboard = () => {
         </HeaderBar>
       )}
       {showDrop && <AccountDrop onClose={() => setShowDrop(false)} />}
+        {topUsers.length <= 0 && <Loader/>}
       {topUsers.length > 0 && (
         <>
           <HeroImage loading="lazy" src={data.userdata.badgeUrl} />
@@ -478,6 +480,7 @@ const TitleLogo = styled.span`
   color: #4d4d4d;
   font-family: Hina Mincho, sans-serif;
   font-size: 35px;
+  cursor: pointer;
   @media (max-width: 991px) {
     font-size: 35px;
     margin-left: 10px;

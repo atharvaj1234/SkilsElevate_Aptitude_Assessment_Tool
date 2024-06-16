@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth, logInWithEmailAndPassword, signInWithGoogle } from "../firebase";
+import { auth, logInWithEmailAndPassword, signInWithGoogle, sendPasswordReset} from "../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import styled from "styled-components";
 
@@ -70,6 +70,10 @@ function LoginOverlay({ onClose }) {
               Don't have an account?
               {/* eslint-disable-next-line */}
               <a onClick={onClose}> Signup</a>
+            </InfoText>
+            <InfoText>
+              {/* eslint-disable-next-line */}
+              <a onClick={() => sendPasswordReset(email)}>Forgot password?</a>
             </InfoText>
           </div>
         </Card>
