@@ -26,11 +26,11 @@ const PerformanceGraph = () => {
             category,
             attentionNeededSum: testdata.reduce((sum, test) => {
               const categoryData = test.categoryData.find((d) => d.category === category);
-              return sum + (categoryData ? parseFloat(categoryData.attentionRequired) : 0);
+              return (categoryData ? parseFloat(categoryData.attentionRequired) : 0);
             }, 0),
             avgTimeSum: testdata.reduce((sum, test) => {
               const categoryData = test.categoryData.find((d) => d.category === category);
-              return sum + (categoryData ? parseFloat(categoryData.avgTime) : 0);
+              return (categoryData ? parseFloat(categoryData.avgTime) : 0);
             }, 0),
           }));
 

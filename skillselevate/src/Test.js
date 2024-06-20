@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Loader from './components/Loader';
+import { getBadgeData } from "./components/Badges";
 import styled from "styled-components";
 import { auth, db } from "./firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -18,34 +19,6 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-
-const getBadgeData = (percentage) => {
-  if (percentage >= 75) {
-    return {
-      badgeUrl:
-        "https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/Badges%2FBeginner%2FScholar.png?alt=media&token=f66cd703-5c7f-4a02-b6d8-d3b821b9f885",
-      badgeValue: 100,
-    };
-  } else if (percentage >= 50) {
-    return {
-      badgeUrl:
-        "https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/Badges%2FBeginner%2FLearner.png?alt=media&token=07a01ab5-25f7-4648-811c-bfae551ef9a6",
-      badgeValue: 75,
-    };
-  } else if (percentage >= 25) {
-    return {
-      badgeUrl:
-        "https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/Badges%2FBeginner%2FRookie.png?alt=media&token=4904c82e-1e23-477d-a152-650e5d2cae2b",
-      badgeValue: 50,
-    };
-  } else {
-    return {
-      badgeUrl:
-        "https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/Badges%2FBeginner%2FBeginner.png?alt=media&token=8bec5e34-39c6-402c-b8e0-954d4845baf6",
-      badgeValue: 25,
-    };
-  }
-};
 
 ChartJS.register(
   CategoryScale,

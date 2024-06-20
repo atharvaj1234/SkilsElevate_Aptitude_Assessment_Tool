@@ -11,7 +11,7 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
   // eslint-disable-next-line
   const [user, loading, error] = useAuthState(auth);
   let [data, setName] = useState("");
-  const fetchUserName = async () => {
+  const fetchUser = async () => {
     try {
       const q = query(collection(db, "users"), where("uid", "==", user?.uid));
       const doc = await getDocs(q);
@@ -23,7 +23,7 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
     }
   };
   useEffect(() => {
-    fetchUserName();
+    fetchUser();
     // eslint-disable-next-line
   }, [data, loading]);
 
@@ -71,6 +71,7 @@ const Division = styled.div`
   top: 15px;
   display: flex;
   flex-direction: column;
+  align-items: bottom;
   gap: 5px;
   filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
   overflow: hidden;

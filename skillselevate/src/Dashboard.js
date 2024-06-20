@@ -97,7 +97,7 @@ const Dashboard = () => {
       }, {})
     : testInfos;
 
-  const fetchUserName = async () => {
+  const fetchUser = async () => {
     try {
       const q = query(collection(db, "users"), where("uid", "==", user?.uid));
       const doc = await getDocs(q);
@@ -142,7 +142,7 @@ const Dashboard = () => {
     if (loading) return;
     if (!user) return navigate("/");
     if (error) console.log(error);
-    fetchUserName();
+    fetchUser();
     // eslint-disable-next-line
   }, [user, loading]);
 

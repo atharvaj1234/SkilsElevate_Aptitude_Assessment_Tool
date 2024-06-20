@@ -123,7 +123,7 @@ function PersonlizeProfile({ onClose }) {
   let [data, setName] = useState("");
   
   useEffect(() => {
-    fetchUserName();
+    fetchUser();
     // eslint-disable-next-line
   }, [data, loading]);
 
@@ -134,7 +134,7 @@ function PersonlizeProfile({ onClose }) {
   };
 
 
-  const fetchUserName = async () => {
+  const fetchUser = async () => {
     try {
       const q = query(collection(db, "users"), where("uid", "==", user?.uid));
       const doc = await getDocs(q);

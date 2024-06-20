@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { getProfileBadgeData } from "./components/Badges";
 import AccountDrop from "./components/AccountDrop";
-import Loader from './components/Loader';
+import Loader from "./components/Loader";
 import styled from "styled-components";
 import { auth, db } from "./firebase";
 import { query, collection, getDocs, where, orderBy } from "firebase/firestore";
@@ -13,6 +14,7 @@ const Dashboard = () => {
   const [showDrop, setShowDrop] = useState(false);
   const [user, loading, error] = useAuthState(auth);
   const [data, setName] = useState();
+  const [betterPercentage, setBetterPercentage] = useState(0);
   const [topUsers, setTopUsers] = useState([]);
   const [viewAll, setviewAll] = useState(false);
   const navigate = useNavigate();
@@ -23,8 +25,6 @@ const Dashboard = () => {
       const q = query(usersCollection, orderBy("profilescore", "desc"));
       const querySnapshot = await getDocs(q);
       const topUsers = querySnapshot.docs.map((doc) => doc.data());
-      // Do something with the topUsers data
-      console.log(topUsers);
       setTopUsers(topUsers);
     } catch (err) {
       console.error(err);
@@ -32,7 +32,20 @@ const Dashboard = () => {
     }
   };
 
-  const fetchUserName = async () => {
+  const calculatePerformance = async () => {
+    if (!data || topUsers.length === 0) return;
+
+    let sumOfProfileScore = 0;
+    topUsers.forEach((user) => {
+      if (user.profilescore <= data.profilescore)
+        sumOfProfileScore += user.profilescore;
+    });
+    const average = sumOfProfileScore / topUsers.length - 1;
+    const betterpercentage = (average / data.profilescore) * 100;
+    setBetterPercentage(betterpercentage.toFixed(0));
+  };
+
+  const fetchUser = async () => {
     try {
       const q = query(collection(db, "users"), where("uid", "==", user?.uid));
       const doc = await getDocs(q);
@@ -48,10 +61,11 @@ const Dashboard = () => {
     if (loading) return;
     if (!user) return navigate("/");
     if (error) console.log(error);
-    fetchUserName();
+    fetchUser();
     fetchTopUsers();
+    calculatePerformance();
     // eslint-disable-next-line
-  }, [user, loading]);
+  }, [user, loading, data , topUsers]);
 
   return (
     <Wrapper>
@@ -70,7 +84,9 @@ const Dashboard = () => {
         <HeaderBar>
           <HeaderContent>
             <Logo>
-              <TitleLogo onClick={()=>navigate('/')}>Q SkillsElevate</TitleLogo>
+              <TitleLogo onClick={() => navigate("/")}>
+                Q SkillsElevate
+              </TitleLogo>
             </Logo>
 
             <ProfileImg
@@ -82,14 +98,14 @@ const Dashboard = () => {
         </HeaderBar>
       )}
       {showDrop && <AccountDrop onClose={() => setShowDrop(false)} />}
-        {topUsers.length <= 0 && <Loader/>}
+      {topUsers.length <= 0 && <Loader />}
       {topUsers.length > 0 && (
         <>
-          <HeroImage loading="lazy" src={data.userdata.badgeUrl} />
+          <HeroImage loading="lazy" src={getProfileBadgeData(data)} />
           <Banner>
             <Rank>#4</Rank>
             <Description>
-              You are doing better than 60% of other learners!
+              You are doing better than {betterPercentage}% of other learners!
             </Description>
           </Banner>
           <MainSection>
@@ -201,7 +217,7 @@ z-index: 1;
 flex- direction: row;
 flex-wrap: wrap;
 @media (max-width: 570px){
-justify-content: sterech;
+  margin-top: 20px;
   flex-direction:column;
   width: 80%;
   gap: 20px;
@@ -255,7 +271,7 @@ const UserCard = styled.article`
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 18px 80px 18px 34px;
+  padding: 20px 80px 20px 30px;
   margin-top: 20px;
   @media (max-width: 991px) {
     flex-wrap: wrap;
@@ -279,12 +295,17 @@ const Rank1 = styled.div`
 
 const Avatar = styled.img`
   aspect-ratio: 1;
+  border-radius: 50%;
   object-fit: auto;
   object-position: center;
-  width: 56px;
+  width: 60px;
+  @media (max-width: 570px) {
+    width: 50px;
+  }
 `;
 
 const UserInfo = styled.div`
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
 `;
@@ -297,7 +318,7 @@ const UserName = styled.h2`
 
 const UserPoints = styled.p`
   color: var(--Neutral-Grey-2, #858494);
-  margin-top: 13px;
+  margin-top: 5px;
   font: 400 14px/140% Rubik, sans-serif;
 `;
 
@@ -488,7 +509,8 @@ const TitleLogo = styled.span`
 `;
 
 const HeroImage = styled.img`
-  aspect-ratio: 0.95;
+  aspect-ratio: 1;
+  padding: 20px;
   object-fit: auto;
   object-position: center;
   width: 178px;
