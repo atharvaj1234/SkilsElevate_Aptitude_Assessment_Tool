@@ -6,7 +6,6 @@ import TestPage from './Test';
 import Practice from './Practice';
 import AddQuestionForm from './Upload';
 import Stats from './Stats';
-import AdminUploadBadge from './UploadBadges';
 
 function App() {
   return (
@@ -18,7 +17,6 @@ function App() {
         <Route path="/practice" element={<Practice/>} />
         <Route path="/statistics" element={<Stats/>} />
         <Route path="/admin" element={<AddQuestionForm/>} />
-        <Route path="/admin/badges" element={<AdminUploadBadge/>} />
       </Routes>
     </Router>
   );

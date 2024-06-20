@@ -1,5 +1,6 @@
 import React, { useEffect, useState} from "react";
 import styled from "styled-components";
+import AccountManagement from "./AccountManagement";
 import { auth, db, logout } from "../firebase";
 import { query, collection, getDocs, where } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -7,10 +8,12 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 
 
-  const AccountManagement = ({ onClose }) => {
+  const AccountDrop = ({ onClose }) => {
   // eslint-disable-next-line
   const [user, loading, error] = useAuthState(auth);
+  const [showManageAccount , setShowManageAccount] = useState(false)
   let [data, setName] = useState("");
+  
   const fetchUser = async () => {
     try {
       const q = query(collection(db, "users"), where("uid", "==", user?.uid));
@@ -22,6 +25,13 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
       alert("An error occured while fetching user data");
     }
   };
+
+  const handleCloseOutsideClick = (event) => {
+    if (event.target === event.currentTarget) {
+      setShowManageAccount(false);
+    }
+  };
+
   useEffect(() => {
     fetchUser();
     // eslint-disable-next-line
@@ -29,9 +39,13 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
 
   return (
     <>
+     {showManageAccount && (
+        <Overlay onClick={handleCloseOutsideClick}>
+          <AccountManagement onClose={() => setShowManageAccount(false)}/>
+        </Overlay>)}
       <Division>
         <ProfileImg onClick={onClose} loading="lazy" src={data.profilepicture} />
-        <AccountOption>
+        <AccountOption onClick={()=>setShowManageAccount(true)}>
           <OptionText>Manage Account</OptionText>
           <OptionIcon
             loading="lazy"
@@ -51,6 +65,19 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
     </>
   );
 };
+
+const Overlay = styled.div`
+  position: fixed;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
 
 const ProfileImg = styled(LazyLoadImage)`
   width: 60px;
@@ -132,4 +159,4 @@ const OptionIcon = styled.img`
   }
 `;
 
-export default AccountManagement;
+export default AccountDrop;

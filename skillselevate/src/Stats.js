@@ -42,7 +42,7 @@ const Dashboard = () => {
     });
     const average = sumOfProfileScore / topUsers.length - 1;
     const betterpercentage = (average / data.profilescore) * 100;
-    setBetterPercentage(betterpercentage.toFixed(0));
+    setBetterPercentage(betterpercentage>0?betterpercentage.toFixed(0):0);
   };
 
   const fetchUser = async () => {
