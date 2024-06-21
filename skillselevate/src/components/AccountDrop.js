@@ -39,10 +39,10 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
 
   return (
     <>
-     {showManageAccount && (
+     {showManageAccount ? (
         <Overlay onClick={handleCloseOutsideClick}>
           <AccountManagement onClose={() => setShowManageAccount(false)}/>
-        </Overlay>)}
+        </Overlay>) : (
       <Division>
         <ProfileImg onClick={onClose} loading="lazy" src={data.profilepicture} />
         <AccountOption onClick={()=>setShowManageAccount(true)}>
@@ -61,7 +61,7 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
             alt="Log Out Icon"
           />
         </AccountOption>
-      </Division>
+      </Division>)}
     </>
   );
 };

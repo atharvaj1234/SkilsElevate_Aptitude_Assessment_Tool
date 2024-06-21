@@ -1,7 +1,7 @@
-import React, { useState , useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { changePassword , updateName } from "../firebase";
+import { changePassword, updateName } from "../firebase";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 
@@ -12,8 +12,6 @@ const AccountManagement = ({ onClose }) => {
   const [user, loading, error] = useAuthState(auth);
   const [currentPassword, setCurrentPassword] = useState("");
 
-
-
   useEffect(() => {
     if (loading) return;
     if (user) navigate("/dashboard");
@@ -23,8 +21,9 @@ const AccountManagement = ({ onClose }) => {
 
   const updateAccount = async () => {
     if (password !== "" && currentPassword !== "")
-    await changePassword(currentPassword, password);
-    if (name !== "") await updateName(name)
+      await changePassword(currentPassword, password);
+    if (name !== "") 
+      await updateName(name);
   };
 
   return (
@@ -53,9 +52,9 @@ const AccountManagement = ({ onClose }) => {
                 src="https://cdn.builder.io/api/v1/image/assets/TEMP/cf7ac098f5db87311adb5bb39ad666714d75de6cb890f8468d9b4fea61602d32?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
                 alt="Password Icon"
               />
-              <TransparentInput
+              <TransparentPasswordInput
                 type="password"
-                value={password}
+                value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="Current Password"
               />
@@ -66,7 +65,7 @@ const AccountManagement = ({ onClose }) => {
                 src="https://cdn.builder.io/api/v1/image/assets/TEMP/cf7ac098f5db87311adb5bb39ad666714d75de6cb890f8468d9b4fea61602d32?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
                 alt="Password Icon"
               />
-              <TransparentInput
+              <TransparentPasswordInput
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -77,7 +76,7 @@ const AccountManagement = ({ onClose }) => {
               <Button onClick={updateAccount}>Update Account</Button>
             </ButtonWrapper>
           </div>
-          <InfoText onClick={()=>onClose()}>Close</InfoText>
+          <InfoText onClick={() => onClose()}>Close</InfoText>
         </Card>
       </Container>
     </SignupForm>
@@ -116,7 +115,7 @@ const Container = styled.section`
   justify-content: center;
   padding: 34px 31px;
   @media (max-width: 991px) {
-    padding: 0 20px;
+    padding: 15px 15px;
   }
   animation: fadeInDown 0.5s ease-out forwards;
 
@@ -177,6 +176,16 @@ const InputGroup = styled.div`
 `;
 
 const TransparentInput = styled.input.attrs({ type: "text" })`
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  &:focus {
+    border-bottom: 1px solid #ccc; // Optional: Adds focus indicator
+  }
+`;
+
+const TransparentPasswordInput = styled.input.attrs({ type: "password" })`
   background-color: transparent;
   border: none;
   outline: none;

@@ -32,7 +32,7 @@ const Container = styled.section`
   justify-content: center;
   padding: 34px 31px;
   @media (max-width: 991px) {
-    padding: 0 20px;
+    padding: 15px 15px;
   }
   animation: fadeInDown 0.5s ease-out forwards;
 
@@ -93,6 +93,16 @@ const InputGroup = styled.div`
 `;
 
 const TransparentInput = styled.input.attrs({ type: "text" })`
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  &:focus {
+    border-bottom: 1px solid #ccc; // Optional: Adds focus indicator
+  }
+`;
+
+const TransparentPasswordInput = styled.input.attrs({ type: "password" })`
   background-color: transparent;
   border: none;
   outline: none;
@@ -238,7 +248,7 @@ function Signup({ onClose }) {
                       src="https://cdn.builder.io/api/v1/image/assets/TEMP/cf7ac098f5db87311adb5bb39ad666714d75de6cb890f8468d9b4fea61602d32?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
                       alt="Password Icon"
                     />
-                    <TransparentInput
+                    <TransparentPasswordInput
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}

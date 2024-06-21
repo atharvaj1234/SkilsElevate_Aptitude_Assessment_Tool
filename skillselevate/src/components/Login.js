@@ -19,6 +19,15 @@ function LoginOverlay({ onClose }) {
     // eslint-disable-next-line
   }, [user, loading]);
 
+  const login = () => {
+    if (!email || !password) alert("Please full all the fields");
+    else logInWithEmailAndPassword(email, password)
+  };
+
+  const forgotPassword = () => {
+    if (!email) alert("Please enter your email");
+    else sendPasswordReset(email)
+  }
   return (
     <LoginForm>
       <Container>
@@ -46,7 +55,7 @@ function LoginOverlay({ onClose }) {
                   src="https://cdn.builder.io/api/v1/image/assets/TEMP/cf7ac098f5db87311adb5bb39ad666714d75de6cb890f8468d9b4fea61602d32?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
                   alt="Password Icon"
                 />
-                <TransparentInput
+                <TransparentPasswordInput
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -54,7 +63,7 @@ function LoginOverlay({ onClose }) {
                 />
               </InputGroup>
               <ButtonWrapper>
-                <Button onClick={() => logInWithEmailAndPassword(email, password)}>Login</Button>
+                <Button onClick={() => login()}>Login</Button>
               </ButtonWrapper>
             </div>
             <Subtitle>Login with Others</Subtitle>
@@ -73,7 +82,7 @@ function LoginOverlay({ onClose }) {
             </InfoText>
             <InfoText>
               {/* eslint-disable-next-line */}
-              <a onClick={() => sendPasswordReset(email)}>Forgot password?</a>
+              <a onClick={() => forgotPassword()}>Forgot password?</a>
             </InfoText>
           </div>
         </Card>
@@ -105,7 +114,7 @@ const Container = styled.section`
   justify-content: center;
   padding: 34px 31px;
   @media (max-width: 991px) {
-    padding: 0 20px;
+    padding: 15px 15px;
   }
   animation: fade 0.3s ease-out forwards;
 
@@ -164,6 +173,16 @@ const InputGroup = styled.div`
 `;
 
 const TransparentInput = styled.input.attrs({ type: "text" })`
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  &:focus {
+    border-bottom: 1px solid #ccc; // Optional: Adds focus indicator
+  }
+`;
+
+const TransparentPasswordInput = styled.input.attrs({ type: "password" })`
   background-color: transparent;
   border: none;
   outline: none;

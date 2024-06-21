@@ -516,7 +516,6 @@ const HeroImage = styled.img`
   width: 178px;
   z-index: 1;
   max-width: 100%;
-  mix-blend-mode: multiply;
 `;
 
 const Banner = styled.header`
