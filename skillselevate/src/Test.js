@@ -56,6 +56,7 @@ function QuizComponent() {
   ]);
 
   useEffect(() => {
+    document.title = "Test";
     const getTestData = async () => {
       try {
         if (loading) return;

@@ -58,6 +58,7 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    document.title = "Your Statistics"
     if (loading) return;
     if (!user) return navigate("/");
     if (error) console.log(error);

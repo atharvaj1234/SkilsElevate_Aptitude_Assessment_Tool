@@ -139,6 +139,7 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    document.title = "SkillsElevate - Dashboard"
     if (loading) return;
     if (!user) return navigate("/");
     if (error) console.log(error);
