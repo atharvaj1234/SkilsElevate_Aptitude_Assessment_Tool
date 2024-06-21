@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import CircularProgress from "@mui/material/CircularProgress";
+import Loader from './components/Loader';
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "./firebase";
 import { query, collection, getDocs, where } from "firebase/firestore";
@@ -296,13 +296,11 @@ function QuizComponent() {
       />
       <Cube
         loading="lazy"
-        src="https://cdn.builder.io/api/v1/image/assets/TEMP/e8afa8948546c2c3fbfc70dd781a98cc5945478848c882ac206981811937afcc?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+        src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2Fcube.png?alt=media&token=72a182b5-e403-4920-81eb-db2966e82ccd"
         alt="Second image"
       />
       {showloading && (
-        <Loadder>
-          <CircularProgress />
-        </Loadder>
+        <Loader/>
       )}
       {showDrop && (
         <Motivation className={isContinueDisabled ? "disabled" : "enabled"}>
@@ -413,17 +411,7 @@ const Motivation = styled.div`
   }
 `;
 
-const Loadder = styled.div`
-  display: flex;
-  background: rgba(0, 0, 0, 0.2);
-  position: fixed;
-  width: 100%;
-  height: 100vh;
-  align-items: center;
-  justify-content: center;
-  top: 0;
-  z-index: 3;
-`;
+
 
 const Options = styled.div`
   display: flex;

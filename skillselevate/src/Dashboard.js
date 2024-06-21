@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import AccountDrop from "./AccountDrop";
-import PersonlizationProfile from "./PersonlizeProfile";
+import AccountDrop from "./components/AccountDrop";
+import PersonlizationProfile from "./components/PersonlizeProfile";
 import CircularProgress from "@mui/material/CircularProgress";
 import styled from "styled-components";
 import { auth, db } from "./firebase";
@@ -8,7 +8,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { query, collection, getDocs, where } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
-import CategoryDropdown from "./CategoryDropdown";
+import CategoryDropdown from "./components/CategoryDropdown";
 
 const Category = [
   {
@@ -79,7 +79,7 @@ const Dashboard = () => {
   const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
   const imageSrc =
-    "https://cdn.builder.io/api/v1/image/assets/TEMP/86979919fb4649685b09a11fe4e04152a5859859c9fa99363941b6705c39d316?apiKey=9fbb9e9d71d845eab2e7b2195d716278&";
+    "https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2FIcons%2Flock.png?alt=media&token=0db4afea-dfb8-41f0-80f7-ef4b2d25f8f8";
   let [data, setName] = useState("");
 
   const [selectedCategory, setSelectedCategory] = useState("Mock");
@@ -97,7 +97,7 @@ const Dashboard = () => {
       }, {})
     : testInfos;
 
-  const fetchUserName = async () => {
+  const fetchUser = async () => {
     try {
       const q = query(collection(db, "users"), where("uid", "==", user?.uid));
       const doc = await getDocs(q);
@@ -142,11 +142,12 @@ const Dashboard = () => {
     if (loading) return;
     if (!user) return navigate("/");
     if (error) console.log(error);
-    fetchUserName();
+    fetchUser();
     // eslint-disable-next-line
   }, [user, loading]);
 
   function TestInfo({ testInfos }) {
+    const curtest = (data.userdata.CurrentTest === 0) ? (1) : (data.userdata.CurrentTest); 
     if (Object.keys(testInfos).length === 0)
       return <p>No Tests Found for the Selected Category</p>;
     const sortedTestInfos = Object.entries(testInfos).sort(
@@ -171,12 +172,12 @@ const Dashboard = () => {
                 <DetailText>Time: {testData.time} minutes</DetailText>
               </InfoDetails>
               {parseInt(testid.replace(/\D/g, "")) <=
-              data.userdata.CurrentTest ? (
+              curtest ? (
                 parseInt(testid.replace(/\D/g, "")) <
-                data.userdata.CurrentTest ? (
+                curtest ? (
                   <StartButton
                     onClick={() =>
-                      navigate("/test", { state: { testId: testid } })
+                      navigate("/test", { state: { testId: testid , testTitle: testData.title} })
                     }
                   >
                     Retake
@@ -184,7 +185,7 @@ const Dashboard = () => {
                 ) : (
                   <StartButton
                     onClick={() =>
-                      navigate("/test", { state: { testId: testid } })
+                      navigate("/test", { state: { testId: testid , testTitle: testData.title} })
                     }
                   >
                     Start
@@ -205,12 +206,12 @@ const Dashboard = () => {
       {/* <ImageWrapper> */}
       <Circle
         loading="lazy"
-        src="https://cdn.builder.io/api/v1/image/assets/TEMP/fc1353b406cdc5577bcbd645528cc7cc9e348b0c8058cb65d083795bdd79ab29?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+        src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2Fcircle.png?alt=media&token=f0b79718-d8a9-43d3-8db0-aa307eec5d81"
         alt="First image"
       />
       <Cube
         loading="lazy"
-        src="https://cdn.builder.io/api/v1/image/assets/TEMP/e8afa8948546c2c3fbfc70dd781a98cc5945478848c882ac206981811937afcc?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+        src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2Fcube.png?alt=media&token=72a182b5-e403-4920-81eb-db2966e82ccd"
         alt="Second image"
       />
       {/* </ImageWrapper> */}
@@ -224,7 +225,7 @@ const Dashboard = () => {
       <HeaderBar>
         <HeaderContent>
           <Logo>
-            <TitleLogo>Q SkillsElevate</TitleLogo>
+            <TitleLogo onClick={()=>navigate('/')}>Q SkillsElevate</TitleLogo>
           </Logo>
           <ProfileImg
             onClick={() => setShowDrop(true)}
@@ -257,7 +258,7 @@ const Dashboard = () => {
               <EnhanceItem>
                 <EnhanceImage
                   loading="lazy"
-                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/3eb0553d22a80db3842d703e9f9884b5b0e90cfbc94657a7a7fc53110af30929?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+                  src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2FEnhance.png?alt=media&token=88e41774-91d2-4259-8838-c48ad6f27b49"
                 />
               </EnhanceItem>
               <EnhanceDescription>
@@ -283,10 +284,10 @@ const Dashboard = () => {
               </StatsDescription>
               <StatsImage
                 loading="lazy"
-                src="https://cdn.builder.io/api/v1/image/assets/TEMP/809b034d32755b7266ad678342ec0131514cfa24856d697cbd25583dbdb7e1f6?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+                src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2FStats.png?alt=media&token=5b409acc-453b-4792-b040-0a10393dbcf2"
               />
             </StatsInner>
-            <StatsButton>Take a Look</StatsButton>
+            <StatsButton onClick={()=> navigate("/statistics")}>Take a Look</StatsButton>
           </ReviewStats>
         </SecondaryContent>
       </SecondarySection>
@@ -408,6 +409,7 @@ const TitleLogo = styled.span`
   color: #4d4d4d;
   font-family: Hina Mincho, sans-serif;
   font-size: 35px;
+  cursor: pointer;
   @media (max-width: 991px) {
     font-size: 35px;
     margin-left: 10px;

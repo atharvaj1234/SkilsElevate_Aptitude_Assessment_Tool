@@ -1,10 +1,7 @@
 import React, { useState , useEffect } from 'react';
 import styled from "styled-components";
-import Signup from './Signup'; 
+import Signup from './components/Signup'; 
 
-
-import testimg from './images/test.png';
-import skillimg from './images/skillup.png';
 
 const Container = styled.div`
   background-color: #fff;
@@ -452,7 +449,7 @@ function LandingPage() {
   return (
     <Container>
       <AppWrapper>
-        <BackgroundImage loading="lazy" src="https://cdn.builder.io/api/v1/image/assets/TEMP/f4cf699125e88a10522e90b31251c0b7417ad0d0eb943386636edb3946152f74?apiKey=9fbb9e9d71d845eab2e7b2195d716278&" alt="" />
+        <BackgroundImage loading="lazy" src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2Fbackground.png?alt=media&token=f5b836cb-6b4f-4124-bf2a-f99555fd0349" alt="" />
         <Header>
           <LogoWrapper>
             <LogoText>Q  SkillsElevate</LogoText>
@@ -482,7 +479,7 @@ function LandingPage() {
             <ColumnSecondary>
               <MainImage
                 loading="lazy"
-                src="https://cdn.builder.io/api/v1/image/assets/TEMP/dfaedc547a284b65b7ec5e254e8f935541f09cd4e489403ca590d5da87578302?apiKey=9fbb9e9d71d845eab2e7b2195d716278&"
+                src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2Fhero.png?alt=media&token=dd757686-2c0a-42a6-a3b8-af6c8647f33c"
                 alt="Illustration showing skills enhancement"
               />
             </ColumnSecondary>
@@ -496,7 +493,7 @@ function LandingPage() {
                 <SectionColumn>
                   <SectionImage
                     loading="lazy"
-                    src={skillimg}
+                    src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2Fskillup.png?alt=media&token=940aaaae-0bab-4c6a-b06b-b88424e7a02e"
                     alt="Image describing our services"
                   />
                 </SectionColumn>
@@ -520,7 +517,7 @@ function LandingPage() {
                     </SectionText>
                     <SectionLinkContainer>
                       <SectionLink onClick={() => setShowSignup(true)}>Up Skill Yourself </SectionLink>
-                      <SectionIcon loading="lazy" src="https://cdn.builder.io/api/v1/image/assets/TEMP/11dcb14cb07e42b4e878bfbf75a4b84359bf91dc5a9dbddea50898f71a1c0079?apiKey=9fbb9e9d71d845eab2e7b2195d716278&" alt="" />
+                      <SectionIcon loading="lazy" src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2FIcons%2Frightarrow.png?alt=media&token=400417f6-39d7-4886-a568-61841c2a5ee2" alt="" />
                     </SectionLinkContainer>
                   </TextContent>
                 </SectionColumn>
@@ -560,14 +557,14 @@ function LandingPage() {
                     </SectionText>
                     <SectionLinkContainer>
                       <SectionLink onClick={() => setShowSignup(true)}>Take a Test</SectionLink>
-                      <SectionIcon loading="lazy" src="https://cdn.builder.io/api/v1/image/assets/TEMP/ee9f7a8302d04e25cc3df8493a92937a04820b982e9ef8152e52d218e9a8ca63?apiKey=9fbb9e9d71d845eab2e7b2195d716278&" alt="" />
+                      <SectionIcon loading="lazy" src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2FIcons%2Frightarrow.png?alt=media&token=400417f6-39d7-4886-a568-61841c2a5ee2" alt="" />
                     </SectionLinkContainer>
                   </TextContent>
                 </SectionColumn>
                 <SectionColumn>
                   <SectionImage
                     loading="lazy"
-                    src={ testimg }
+                    src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2Ftest.png?alt=media&token=a6607aff-b2ea-475d-b529-d316eb315920"
                     alt="Illustration of progress tracking"
                   />
                 </SectionColumn>
