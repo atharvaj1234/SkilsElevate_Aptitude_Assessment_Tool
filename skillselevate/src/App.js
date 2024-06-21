@@ -4,7 +4,7 @@ import LandingPage from './LandingPage';
 import Dashboard from './Dashboard';
 import TestPage from './Test';
 import Practice from './Practice';
-import AddQuestionForm from './Upload';
+import AddQuestionForm from './CsvUpload';
 import Stats from './Stats';
 
 function App() {

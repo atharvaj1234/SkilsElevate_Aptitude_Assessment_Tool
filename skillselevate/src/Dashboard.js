@@ -43,7 +43,7 @@ const Category = [
   {
     Exam: "UCO",
     Category: [
-      "English language",
+      "English Language",
       "General Awareness",
       "Reasoning",
       "Computer Aptitude",
@@ -158,7 +158,7 @@ const Dashboard = () => {
     return (
       <>
         {sortedTestInfos.map(([testid, testData]) => (
-          <SectionCard key={testid}>
+          (testid !== "demo")&&(<SectionCard key={testid}>
             <InfoContent>
               <InfoDetails>
                 <Title>{testData.title}</Title>
@@ -195,7 +195,8 @@ const Dashboard = () => {
                 <InfoImage loading="lazy" src={imageSrc} />
               )}
             </InfoContent>
-          </SectionCard>
+          </SectionCard>)
+          
         ))}
       </>
     );
