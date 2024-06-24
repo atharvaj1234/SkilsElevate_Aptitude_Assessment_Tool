@@ -130,8 +130,9 @@ function QuizComponent() {
       console.error(err);
     }
   };
-
+  
   useEffect(() => {
+    document.title = "Practice";
     const initializeQuiz = async () => {
       if (loading) return;
       if (!user) return navigate("/");
@@ -142,7 +143,6 @@ function QuizComponent() {
     };
     initializeQuiz();
 
-    document.title = "Practice";
     // eslint-disable-next-line
   }, [user, loading]);
 

@@ -58,6 +58,7 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    document.title = "Your Statistics"
     if (loading) return;
     if (!user) return navigate("/");
     if (error) console.log(error);
@@ -112,7 +113,6 @@ const Dashboard = () => {
             <FeatureWrapper>
               <FeatureColumn>
                 <Img
-                  onClick={() => setShowDrop(true)}
                   loading="lazy"
                   src={topUsers[1].profilepicture}
                 />
@@ -126,7 +126,6 @@ const Dashboard = () => {
               </FeatureColumn>
               <FeatureColumn>
                 <Img
-                  onClick={() => setShowDrop(true)}
                   loading="lazy"
                   src={topUsers[0].profilepicture}
                 />
@@ -141,7 +140,6 @@ const Dashboard = () => {
 
               <FeatureColumn>
                 <Img
-                  onClick={() => setShowDrop(true)}
                   loading="lazy"
                   src={topUsers[2].profilepicture}
                 />

@@ -14,19 +14,19 @@ const Category = [
   {
     Exam: "Default",
     Category: [
-      "Logical Reasoning",
-      "Mathematical Aptitude",
-      "General Knowledge",
-      "Verbal Ability",
+      "Reasoning",
+      "Mathematical Skills",
+      "General Awareness",
+      "Language Comprehension",
     ],
   },
   {
     Exam: "MAT",
     Category: [
       "Language Comprehension",
-      "Data Analysis & Sufficiency",
+      "Analysis",
       "Mathematical Skills",
-      "Intelligence & Critical Reasoning",
+      "Reasoning",
       "Indian & Global Environment",
     ],
   },
@@ -34,20 +34,18 @@ const Category = [
     Exam: "CAT",
     Category: [
       "Verbal Ability",
-      "Reading Comprehension",
-      "Quantitative Ability",
-      "Data Interpretation",
-      "Logical Reasoning",
+      "Language Comprehension",
+      "Mathematical Skills",
+      "Reasoning",
     ],
   },
   {
     Exam: "UCO",
     Category: [
-      "English language",
+      "Language Comprehension",
       "General Awareness",
       "Reasoning",
       "Computer Aptitude",
-      "Data Interpretation",
       "Analysis",
     ],
   },
@@ -56,15 +54,15 @@ const Category = [
     Category: [
       "Vocabulary",
       "Functional Grammer",
-      "Reading Comprehension",
+      "Language Comprehension",
       "Interactive English",
     ],
   },
   {
     Exam: "GATE",
     Category: [
-      "Toughest Logical Reasoning",
-      "Mathematical Aptitude",
+      "Reasoning",
+      "Mathematical Skills",
       "Quantitative Ability",
       "General Knowledge",
       "Verbal Ability",
@@ -139,6 +137,7 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    document.title = "SkillsElevate - Dashboard"
     if (loading) return;
     if (!user) return navigate("/");
     if (error) console.log(error);
@@ -158,7 +157,7 @@ const Dashboard = () => {
     return (
       <>
         {sortedTestInfos.map(([testid, testData]) => (
-          <SectionCard key={testid}>
+          (testid !== "demo")&&(<SectionCard key={testid}>
             <InfoContent>
               <InfoDetails>
                 <Title>{testData.title}</Title>
@@ -195,7 +194,8 @@ const Dashboard = () => {
                 <InfoImage loading="lazy" src={imageSrc} />
               )}
             </InfoContent>
-          </SectionCard>
+          </SectionCard>)
+          
         ))}
       </>
     );
