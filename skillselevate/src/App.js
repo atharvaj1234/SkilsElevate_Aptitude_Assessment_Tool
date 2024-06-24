@@ -6,11 +6,13 @@ import TestPage from './Test';
 import Practice from './Practice';
 import AddQuestionForm from './CsvUpload';
 import Stats from './Stats';
+import PageNotFound from './PageNotFound';
 
 function App() {
   return (
     <Router>
       <Routes>
+      <Route path="*" exact element={<PageNotFound/>} />
         <Route path="/" exact element={<LandingPage/>} />
         <Route path="/dashboard" element={<Dashboard/>} />
         <Route path="/test" element={<TestPage/>} />
