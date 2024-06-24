@@ -74,7 +74,7 @@ const PageNotFound = () => {
   return (
     <>
       <Div>
-        <ImageDiv src="https://i.pinimg.com/originals/0e/c0/db/0ec0dbf1e9a008acb9955d3246970e15.gif" />
+        <ImageDiv src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2F404.gif?alt=media&token=c0120516-fe57-4d23-a78c-792411773208" />
         <OppsText>OOPS!</OppsText><TextHolder>Page Not Found</TextHolder>
       </Div>
     </>
