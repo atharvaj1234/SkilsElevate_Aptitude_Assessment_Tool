@@ -24,7 +24,6 @@ const db = getFirestore(app);
 const AdminPage = () => {
   const navigate= useNavigate();
   const [showDashboard, setShowDashboard] = useState(false);
-  const [data, setData] = useState("");
   const [user, loading, error] = useAuthState(auth);
   const [exam, setExam] = useState("");
   const [testid, setTestid] = useState("");
@@ -57,7 +56,6 @@ const AdminPage = () => {
         const q = query(collection(db, "users"), where("uid", "==", user?.uid));
         const doc = await getDocs(q);
         const data = doc.docs[0].data();
-        setData(data);
         if (data.role === "admin") {
           setShowDashboard(true);
         } else {
