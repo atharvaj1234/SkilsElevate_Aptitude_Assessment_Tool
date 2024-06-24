@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+import { auth } from "./firebase";
 import Papa from "papaparse";
+import { query, collection, getDocs, where } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -18,6 +22,10 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const AdminPage = () => {
+  const navigate= useNavigate();
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [data, setData] = useState("");
+  const [user, loading, error] = useAuthState(auth);
   const [exam, setExam] = useState("");
   const [testid, setTestid] = useState("");
   const [category, setCategory] = useState("");
@@ -37,6 +45,34 @@ const AdminPage = () => {
       ],
     },
   ]);
+
+  useEffect(() => {
+    document.title = "SkillsElevate - Admin"
+    if (loading) return;
+    if (!user) return navigate("/");
+    if (error) console.log(error);
+
+    const fetchUser = async () => {
+      try {
+        const q = query(collection(db, "users"), where("uid", "==", user?.uid));
+        const doc = await getDocs(q);
+        const data = doc.docs[0].data();
+        setData(data);
+        if (data.role === "admin") {
+          setShowDashboard(true);
+        } else {
+          alert("Unauthorized Attempt to Access")
+          navigate('/');
+        }
+      } catch (err) {
+        console.error(err);
+        alert("An error occured while fetching user data");
+      }
+    };
+    fetchUser();
+    // eslint-disable-next-line
+  }, [user, loading]);
+
 
   const difficultyLevels = ["Easy", "Medium", "Hard"];
 
@@ -125,7 +161,7 @@ const AdminPage = () => {
     }
   };
 
-  return (
+  return (showDashboard && (
     <div>
       <h1>Admin Page</h1>
       <div>
@@ -265,7 +301,7 @@ const AdminPage = () => {
       ))}
       <button onClick={addQuestion}>Add Question</button>
       <button onClick={updateDatabase}>Update Database</button>
-    </div>
+    </div>)
   );
 };
 

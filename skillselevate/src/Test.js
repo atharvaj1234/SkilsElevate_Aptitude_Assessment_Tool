@@ -135,19 +135,17 @@ function QuizComponent() {
       const avgTime = (
         categoryTimes[category].totalTime / categoryTimes[category].count
       ).toFixed(2);
-      const avgCorrectTime = (
-        categoryTimes[category].totalCorrectTime /
-        categoryTimes[category].correct
-      ).toFixed(2);
+      const avgCorrectTime = categoryTimes[category].correct ? (categoryTimes[category].totalCorrectTime / categoryTimes[category].correct).toFixed(2) : '0.00';
 
       // Attention required is a combination of correctness and average time taken
       const correctnessFactor =
         100 -
         (categoryTimes[category].correct / categoryTimes[category].count) * 100;
 
-      const avgTimeFactor = avgCorrectTime / avgTime;
+      const avgTimeFactor = avgCorrectTime > 0? avgCorrectTime / avgTime : 1;
 
       const attentionRequired = (correctnessFactor * avgTimeFactor).toFixed(2);
+      console.log(attentionRequired);
 
       return { category, avgTime, avgCorrectTime, attentionRequired };
     });

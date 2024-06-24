@@ -1,6 +1,5 @@
 import { initializeApp } from "firebase/app";
 import { getStorage } from "firebase/storage";
-
 import {
   updateProfile,
   updatePassword,
@@ -14,6 +13,7 @@ import {
   sendPasswordResetEmail,
   signOut,
 } from "firebase/auth";
+
 import {
   getFirestore,
   query,
@@ -56,6 +56,7 @@ const signInWithGoogle = async () => {
         profilepicture: user.photoURL,
         exam: null,
         profilescore: 0,
+        role: "user",
         userdata: {
           CurrentTest: 0,
           testdata: [],
@@ -87,6 +88,7 @@ const registerWithEmailAndPassword = async (name, email, password) => {
       profilepicture: defaultprofile,
       exam: null,
       profilescore: 0,
+      role: "user",
       userdata: {
         CurrentTest: 0,
         testdata: [],
@@ -161,6 +163,7 @@ const updateName = async (newName) => {
     alert("No user is currently logged in.");
   }
 };
+
 
 export {
   storage,
