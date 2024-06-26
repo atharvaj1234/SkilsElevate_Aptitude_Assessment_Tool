@@ -1,70 +1,66 @@
-# Getting Started with Create React App
+# SkillsElevate Web Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Overview
 
-## Available Scripts
+SkillsElevate is a comprehensive web application designed to help students enhance their quantitative, verbal, logical, and data interpretation skills through an engaging and interactive platform. This document provides an overview of the project, including its objectives, features, and how to get started.
 
-In the project directory, you can run:
+## Objectives
 
-### `npm start`
+- To create a platform where students can practice and assess their aptitude across various domains.
+- To offer immediate feedback on responses and detailed results upon completion of tests.
+- To ensure a user-friendly interface that encourages continuous learning and improvement.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Features
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### User Authentication
 
-### `npm test`
+- **Registration**: New users can sign up using their email addresses.
+- **Login**: Existing users can log in to access their profiles and test history.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Main Sections
 
-### `npm run build`
+- **Practice Section**: Offers an endless stream of practice questions across all skill domains. Questions are randomized to prevent repetition and encourage continuous learning.
+- **Take Test Section**: Provides a selection of structured tests, each with a specific number of questions and a time limit. Tests cover various topics and difficulty levels.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Feedback and Results
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- **Instant Feedback**: Users receive immediate feedback on their responses within the practice section.
+- **Detailed Results**: Upon completing a test in the "Take Test" section, users are presented with a detailed analysis of their performance, including scores and areas for improvement.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Motivation and Badges
 
-### `npm run eject`
+- **Pop-up Rewards**: Correct answers trigger motivational pop-ups, encouraging continued engagement.
+- **Profile Score Updates**: Performance in both practice and tests updates the user's profile score.
+- **Badges**: Completing tests earns users badges, which they can display on their profile to showcase their achievements.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Getting Started
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+To start using AptiTest, follow these steps:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1. **Visit the Website**: Open your browser and navigate to the AptiTest website.
+2. **Register/Login**: If you're new, click on "Register" to create an account. Existing users can log in using their credentials.
+3. **Navigate Home Page**: After logging in, you'll be directed to the main home page where you can select either "Practice" or "Take Test".
+   - **Practice**: Choose this option for an endless stream of practice questions.
+   - **Take Test**: Select from available tests, each with a specified number of questions and a time limit.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Installation (To run locally)
+- clone the reposistory
+- create `.env` file in project's root directory
+- add your firebase API Key and Gemini API as `REACT_APP_FIREBASE_API` and `REACT_APP_GEN_AI`
+- modify config in `firebase.js` to your firestore server
+- run `npm install`
+- run `npm start`
 
-## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Contributing
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Contributions to SkillsElevate are welcome Whether you're interested in adding new features, improving existing ones, or fixing bugs, please reach out to us via our contact
 
-### Code Splitting
+## License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+This project is licensed under the GNU GPLv3 License. See the `LICENSE.txt` file for details.
 
-### Analyzing the Bundle Size
+## Contact
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+For any inquiries, feedback, or contributions, please [Contact Us here](mailto:atharvaj321@gmail.com).
 
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
