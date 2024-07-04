@@ -470,8 +470,7 @@ function LandingPage() {
               <MainInfo>
                 <MainTitle>SkillsElevate</MainTitle>
                 <MainDescription>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                Elevate your skills with Skillselevate. We turn assessments into milestones, guiding you to surpass your limits. Dive in to unlock new levels of performance and achieve your peak.
                 </MainDescription>
                 <CallToAction  onClick={() => setShowSignup(true)}>Try Now! It’s Free</CallToAction>
               </MainInfo>

@@ -35,10 +35,12 @@ const Category = [
   {
     Exam: "Default",
     Category: [
-      "Logical Reasoning",
-      "Mathematical Aptitude",
-      "General Knowledge",
-      "Verbal Ability",
+      "Reasoning",
+      "Mathematical Skills",
+      "General Awareness",
+      "Language Comprehension",
+      "Analysis",
+      "Indian & Global Environment",
     ],
   },
   {

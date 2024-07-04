@@ -18,6 +18,8 @@ const Category = [
       "Mathematical Skills",
       "General Awareness",
       "Language Comprehension",
+      "Analysis",
+      "Indian & Global Environment",
     ],
   },
   {
@@ -33,7 +35,7 @@ const Category = [
   {
     Exam: "CAT",
     Category: [
-      "Verbal Ability",
+      "Analysis",
       "Language Comprehension",
       "Mathematical Skills",
       "Reasoning",
@@ -56,16 +58,6 @@ const Category = [
       "Functional Grammer",
       "Language Comprehension",
       "Interactive English",
-    ],
-  },
-  {
-    Exam: "GATE",
-    Category: [
-      "Reasoning",
-      "Mathematical Skills",
-      "Quantitative Ability",
-      "General Knowledge",
-      "Verbal Ability",
     ],
   },
 ];
@@ -112,7 +104,6 @@ const Dashboard = () => {
       }
     } catch (err) {
       console.error(err);
-      alert("An error occured while fetching user data");
     }
   };
 

@@ -10,13 +10,13 @@ const Button = styled.button`
   border-radius: 16px;
   background: linear-gradient(100deg, #9181f4 -5.85%, #5038ed 109.55%);
   box-shadow: 0px 8px 21px 0px rgba(0, 0, 0, 0.16);
-  margin-top: 22px;
+  margin: 5px;
   width: 235px;
   max-width: 100%;
   color: #fff;
   text-align: center;
   justify-content: center;
-  padding: 22px 60px;
+  padding: 20px 60px;
   font-weight: 700;
   font-size: 12px;
   font-family: Poppins, sans-serif;
@@ -55,7 +55,7 @@ const SubHeading = styled.h2`
 const Section = styled.section`
   color: #525252;
   font-family: Poppins, sans-serif;
-  margin-top: 67px;
+  margin-top: 60px;
   @media (max-width: 991px) {
     margin-top: 40px;
   }
@@ -70,7 +70,7 @@ const ExamButton = styled.button`
   color: ${({ selected }) => (selected ? "#fff" : "#000")};
   font-family: Poppins, sans-serif;
   margin: 10px;
-  padding: 22px 30px;
+  padding: 20px 30px;
   cursor: pointer;
   @media (max-width: 991px) {
     padding: 22px 20px;
@@ -114,12 +114,19 @@ const Main = styled.div`
   backdrop-filter: blur(15px);
 `;
 
+const InfoText = styled.p`
+  color: #525252;
+  size: 16px;
+  font-weight:700;
+  font-family: Poppins, sans-serif;
+`;
+
 function PersonlizeProfile({ onClose }) {
   const navigate = useNavigate();
   const [selectedExam, setSelectedExam] = useState("");
   const [customExamName, setCustomExamName] = useState("");
   const [user, loading, error] = useAuthState(auth);
-  const exams = ["UCO", "UIEO", "CAT", "MAT", "GATE", "Other"];
+  const exams = ["UCO", "UIEO", "CAT", "MAT", "Other"];
   let [data, setName] = useState("");
   
   useEffect(() => {
@@ -147,6 +154,8 @@ function PersonlizeProfile({ onClose }) {
   };
 
   const updateExam = async () => {
+    if(selectedExam === "") alert("Please Select an Exam");
+    else {
     try {
       const userUID = user?.uid;
       const examValue =
@@ -170,6 +179,7 @@ function PersonlizeProfile({ onClose }) {
     } catch (error) {
       console.error("Error updating user profile:", error);
     }
+    };
   };
 
 
@@ -196,6 +206,7 @@ function PersonlizeProfile({ onClose }) {
           onChange={(e) => setCustomExamName(e.target.value)}
         />
       )}
+      <InfoText>Take a Short Exam to view your stand</InfoText>
       <Button onClick={() => updateExam()}>Next</Button>
     </Main>
   );
