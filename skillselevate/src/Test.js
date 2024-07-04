@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Loader from './components/Loader';
+import Loader from "./components/Loader";
 import { getBadgeData } from "./components/Badges";
 import styled from "styled-components";
 import { auth, db } from "./firebase";
@@ -63,10 +63,18 @@ function QuizComponent() {
         if (!user) return;
         if (error) console.log(error);
 
+        const exams = ["UCO", "UIEO", "CAT", "MAT"];
+        const getExam = () => {
+          if (exams.some((e)=>e === data.exam))
+            return data.exam;
+          else return "Other"
+        }
+
         const q = query(collection(db, "users"), where("uid", "==", user?.uid));
         const doc1 = await getDocs(q);
         const data = doc1.docs[0].data();
-        const docRef = doc(db, "tests", data.exam);
+        let Exam = getExam();
+        const docRef = doc(db, "tests", Exam);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -105,7 +113,6 @@ function QuizComponent() {
   // eslint-disable-next-line
   const [overallStartTime, setOverallStartTime] = useState(Date.now());
 
-
   const checkAnswers = () => {
     const results = answers.map(
       (answer, index) => answer === correctanswers[index]
@@ -135,19 +142,30 @@ function QuizComponent() {
       const avgTime = (
         categoryTimes[category].totalTime / categoryTimes[category].count
       ).toFixed(2);
-      const avgCorrectTime = categoryTimes[category].correct ? (categoryTimes[category].totalCorrectTime / categoryTimes[category].correct).toFixed(2) : '0.00';
+      const avgCorrectTime = categoryTimes[category].correct
+        ? (
+            categoryTimes[category].totalCorrectTime /
+            categoryTimes[category].correct
+          ).toFixed(2)
+        : "0.00";
 
       // Attention required is a combination of correctness and average time taken
       const correctnessFactor =
         100 -
         (categoryTimes[category].correct / categoryTimes[category].count) * 100;
 
-      const avgTimeFactor = avgCorrectTime > 0? avgCorrectTime / avgTime : 1;
+      const avgTimeFactor = avgCorrectTime > 0 ? avgCorrectTime / avgTime : 1;
 
       const attentionRequired = (correctnessFactor * avgTimeFactor).toFixed(2);
       console.log(attentionRequired);
 
-      return { category, avgTime, avgCorrectTime, attentionRequired };
+      return {
+        category,
+        avgTime,
+        avgCorrectTime,
+        attentionRequired,
+        correctnessFactor: 100 - correctnessFactor,
+      };
     });
 
     return averageTimes;
@@ -354,6 +372,13 @@ function QuizComponent() {
         borderWidth: 1,
       },
       {
+        label: "Percentage",
+        data: categoryData.map((d) => d.correctnessFactor),
+        backgroundColor: "rgba(101, 255, 7, 0.2)",
+        borderColor: "rgba(101, 255, 7, 1)",
+        borderWidth: 1,
+      },
+      {
         label: "Average Time",
         data: categoryData.map((d) => d.avgTime),
         backgroundColor: "rgba(54, 162, 235, 0.2)",
@@ -387,136 +412,139 @@ function QuizComponent() {
         src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2Fcube.png?alt=media&token=72a182b5-e403-4920-81eb-db2966e82ccd"
         alt="Second image"
       />
-      {contentLoaded ? (<>
-      <Header>
-        <TimeBox>
-          🕜{" "}
-          {parseInt(totalTimeTaken / 60)
-            .toString()
-            .padStart(2, "0")}
-          :
-          {parseInt(totalTimeTaken % 60)
-            .toString()
-            .padStart(2, "0")}
-        </TimeBox>
-        <SubHeader>{testTitle}</SubHeader>
-        <FinishButton onClick={() => navigate("/dashboard")}>
-          Finish
-        </FinishButton>
-      </Header>
-      <FlexContainer>
-        <Column>
-          <Graph>
-            <h3>Detailed Report</h3>
-            <Bar data={data} options={options} />
-          </Graph>
-          <Evaluationdiv>
-            <LogsContainer>
-              <h3>Evaluation</h3>
-              {Object.entries(categoryAnswers).map(
-                ([category, { correct, total }]) => (
-                  <LogItem key={category}>
-                    <CategoryName>{category}:</CategoryName>
+      {contentLoaded ? (
+        <>
+          <Header>
+            <TimeBox>
+              🕜{" "}
+              {parseInt(totalTimeTaken / 60)
+                .toString()
+                .padStart(2, "0")}
+              :
+              {parseInt(totalTimeTaken % 60)
+                .toString()
+                .padStart(2, "0")}
+            </TimeBox>
+            <SubHeader>{testTitle}</SubHeader>
+            <FinishButton onClick={() => navigate("/dashboard")}>
+              Finish
+            </FinishButton>
+          </Header>
+          <FlexContainer>
+            <Column>
+              <Graph>
+                <h3>Detailed Report</h3>
+                <Bar data={data} options={options} />
+              </Graph>
+              <Evaluationdiv>
+                <LogsContainer>
+                  <h3>Evaluation</h3>
+                  {Object.entries(categoryAnswers).map(
+                    ([category, { correct, total }]) => (
+                      <LogItem key={category}>
+                        <CategoryName>{category}:</CategoryName>
+                        <CorrectTotal>
+                          {correct}/{total}
+                        </CorrectTotal>
+                      </LogItem>
+                    )
+                  )}
+                  <LogItem>
+                    <CategoryName>Percentage:</CategoryName>
+                    <CorrectTotal>{Percentage}%</CorrectTotal>
+                  </LogItem>
+                  <LogItem>
+                    <CategoryName>Average time per question:</CategoryName>
                     <CorrectTotal>
-                      {correct}/{total}
+                      {(
+                        timeTaken.reduce((a, b) => a + b) / questions.length
+                      ).toFixed(2)}{" "}
+                      seconds
                     </CorrectTotal>
                   </LogItem>
-                )
-              )}
-              <LogItem>
-                <CategoryName>Percentage:</CategoryName>
-                <CorrectTotal>{Percentage}%</CorrectTotal>
-              </LogItem>
-              <LogItem>
-                <CategoryName>Average time per question:</CategoryName>
-                <CorrectTotal>
-                  {(
-                    timeTaken.reduce((a, b) => a + b) / questions.length
-                  ).toFixed(2)}{" "}
-                  seconds
-                </CorrectTotal>
-              </LogItem>
-            </LogsContainer>
-            <Section>
-              <Scorebox>
-                <Scored>
-                  {Score}/{questions.length}
-                </Scored>
-                <ProfileImg
-                  loading="lazy"
-                  src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2FIcons%2Fscore.svg?alt=media&token=f6989861-9f6e-44af-9ed7-3e5bf31f0c70"
-                  alt="Profile"
-                />
-                <Description>Your Score</Description>
-              </Scorebox>
+                </LogsContainer>
+                <Section>
+                  <Scorebox>
+                    <Scored>
+                      {Score}/{questions.length}
+                    </Scored>
+                    <ProfileImg
+                      loading="lazy"
+                      src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2FIcons%2Fscore.svg?alt=media&token=f6989861-9f6e-44af-9ed7-3e5bf31f0c70"
+                      alt="Profile"
+                    />
+                    <Description>Your Score</Description>
+                  </Scorebox>
 
-              <Badgebox>
-                <Badge src={badgeUrl} alt="Badge" />
-                <Description>Badge Earned</Description>
-              </Badgebox>
-            </Section>
-          </Evaluationdiv>
-        </Column>
-        <Column>
-            
-          <InfoContainer>
-            <Icon
-              loading="lazy"
-              src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2FIcons%2Fleftarrow.png?alt=media&token=7e7d200d-adf9-4874-b8d4-5c97d9fea77b"
-              alt="Info Icon"
-              onClick={() => {
-                currentQuestionIndex > 0
-                  ? setCurrentQuestionIndex(currentQuestionIndex - 1)
-                  : setCurrentQuestionIndex(questions.length - 1);
-              }}
-            />
-            <QuizSection1>
-            <h2>Review Your Submission</h2>
-              <QuizPrompt>
-                {questions[currentQuestionIndex].question}
-              </QuizPrompt>
-              {questions[currentQuestionIndex].options.map(
-                (option, optIndex) => {
-                  const isCorrect =
-                    option.label === correctanswers[currentQuestionIndex];
-                  const isSelected =
-                    option.label === answers[currentQuestionIndex];
-                  return (
-                    <Option
-                      key={optIndex}
-                      style={{
-                        backgroundColor: isCorrect
-                          ? "#64FF96"
-                          : isSelected
-                          ? "#FF9292"
-                          : "rgba(166, 154, 255, 0.59)",
-                        borderColor: isCorrect
-                          ? "green"
-                          : isSelected
-                          ? "red"
-                          : "blue",
-                      }}
-                    >
-                      {option.label}: {option.text}
-                    </Option>
-                  );
-                }
-              )}
-            </QuizSection1>
-            <Icon
-              loading="lazy"
-              src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2FIcons%2Frightarrow.png?alt=media&token=400417f6-39d7-4886-a568-61841c2a5ee2"
-              alt="Info Icon"
-              onClick={() => {
-                currentQuestionIndex < questions.length - 1
-                  ? setCurrentQuestionIndex(currentQuestionIndex + 1)
-                  : setCurrentQuestionIndex(0);
-              }}
-            />
-          </InfoContainer>
-        </Column>
-      </FlexContainer>
-      </>) : (<Loader/>)}
+                  <Badgebox>
+                    <Badge src={badgeUrl} alt="Badge" />
+                    <Description>Badge Earned</Description>
+                  </Badgebox>
+                </Section>
+              </Evaluationdiv>
+            </Column>
+            <Column>
+              <InfoContainer>
+                <Icon
+                  loading="lazy"
+                  src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2FIcons%2Fleftarrow.png?alt=media&token=7e7d200d-adf9-4874-b8d4-5c97d9fea77b"
+                  alt="Info Icon"
+                  onClick={() => {
+                    currentQuestionIndex > 0
+                      ? setCurrentQuestionIndex(currentQuestionIndex - 1)
+                      : setCurrentQuestionIndex(questions.length - 1);
+                  }}
+                />
+                <QuizSection1>
+                  <h2>Review Your Submission</h2>
+                  <QuizPrompt>
+                    {questions[currentQuestionIndex].question}
+                  </QuizPrompt>
+                  {questions[currentQuestionIndex].options.map(
+                    (option, optIndex) => {
+                      const isCorrect =
+                        option.label === correctanswers[currentQuestionIndex];
+                      const isSelected =
+                        option.label === answers[currentQuestionIndex];
+                      return (
+                        <Option
+                          key={optIndex}
+                          style={{
+                            backgroundColor: isCorrect
+                              ? "#64FF96"
+                              : isSelected
+                              ? "#FF9292"
+                              : "rgba(166, 154, 255, 0.59)",
+                            borderColor: isCorrect
+                              ? "green"
+                              : isSelected
+                              ? "red"
+                              : "blue",
+                          }}
+                        >
+                          {option.label}: {option.text}
+                        </Option>
+                      );
+                    }
+                  )}
+                </QuizSection1>
+                <Icon
+                  loading="lazy"
+                  src="https://firebasestorage.googleapis.com/v0/b/skillselevate.appspot.com/o/siteImages%2FIcons%2Frightarrow.png?alt=media&token=400417f6-39d7-4886-a568-61841c2a5ee2"
+                  alt="Info Icon"
+                  onClick={() => {
+                    currentQuestionIndex < questions.length - 1
+                      ? setCurrentQuestionIndex(currentQuestionIndex + 1)
+                      : setCurrentQuestionIndex(0);
+                  }}
+                />
+              </InfoContainer>
+            </Column>
+          </FlexContainer>
+        </>
+      ) : (
+        <Loader />
+      )}
     </Block>
   ) : (
     <MainContainer>
@@ -532,50 +560,51 @@ function QuizComponent() {
       />
       {contentLoaded ? (
         <MainSection>
-        <Header>
-          <Timer id="timer">🕜 </Timer>
-          <SubHeader>{testTitle}</SubHeader>
-          <Exitbtn onClick={() => navigate("/dashboard")}> X</Exitbtn>
-        </Header>
-        <QuizSection>
-          <QuizPrompt>{questions[currentQuestionIndex].question}</QuizPrompt>
-          {questions[currentQuestionIndex].options.map((option, index) => (
-            <Option
-              key={index}
-              className={isOptionSelected(option) ? "selected" : ""}
-              onClick={() => handleOptionClick(option)}
+          <Header>
+            <Timer id="timer">🕜 </Timer>
+            <SubHeader>{testTitle}</SubHeader>
+            <Exitbtn onClick={() => navigate("/dashboard")}> X</Exitbtn>
+          </Header>
+          <QuizSection>
+            <QuizPrompt>{questions[currentQuestionIndex].question}</QuizPrompt>
+            {questions[currentQuestionIndex].options.map((option, index) => (
+              <Option
+                key={index}
+                className={isOptionSelected(option) ? "selected" : ""}
+                onClick={() => handleOptionClick(option)}
+              >
+                <OptionLabel>{option.label}</OptionLabel>
+                <OptionText>{option.text}</OptionText>
+              </Option>
+            ))}
+          </QuizSection>
+          <Navigation>
+            <NavButton
+              onClick={handlePreviousClick}
+              className={currentQuestionIndex === 0 ? "disabled" : "enabled"}
             >
-              <OptionLabel>{option.label}</OptionLabel>
-              <OptionText>{option.text}</OptionText>
-            </Option>
-          ))}
-        </QuizSection>
-        <Navigation>
-          <NavButton
-            onClick={handlePreviousClick}
-            className={currentQuestionIndex === 0 ? "disabled" : "enabled"}
-          >
-            {"PREVIOUS"}
-          </NavButton>
-          <ProgressHolder>
-            <Wrapper>
-              <Progress progress={pro}></Progress>
-            </Wrapper>
-            <Progresstext>
-              {attemptedOptions}/{questions.length}
-            </Progresstext>
-          </ProgressHolder>
-          <NavButton
-            onClick={handleNextClick}
-            disabled={isContinueDisabled}
-            className={isContinueDisabled ? "disabled" : "enabled"}
-          >
-            {currentQuestionIndex < questions.length - 1 ? "NEXT" : "FINISH"}
-          </NavButton>
-        </Navigation>
-      </MainSection>
-      ) : (<Loader/>)}
-
+              {"PREVIOUS"}
+            </NavButton>
+            <ProgressHolder>
+              <Wrapper>
+                <Progress progress={pro}></Progress>
+              </Wrapper>
+              <Progresstext>
+                {attemptedOptions}/{questions.length}
+              </Progresstext>
+            </ProgressHolder>
+            <NavButton
+              onClick={handleNextClick}
+              disabled={isContinueDisabled}
+              className={isContinueDisabled ? "disabled" : "enabled"}
+            >
+              {currentQuestionIndex < questions.length - 1 ? "NEXT" : "FINISH"}
+            </NavButton>
+          </Navigation>
+        </MainSection>
+      ) : (
+        <Loader />
+      )}
     </MainContainer>
   );
 }
@@ -583,6 +612,7 @@ function QuizComponent() {
 const Badge = styled.img`
   aspect-ratio: 1;
   width: 100px;
+  align-self: center;
   mix-blend-mode: multiply;
 `;
 
@@ -633,10 +663,10 @@ const Badgebox = styled.header`
   display: flex;
   flex-wrap: wrap;
   background-color: var(--color-primary, #fff);
+  justify-content: center;
   color: #000;
   display: flex;
   width: 100%;
-  align-items: flex-start;
   font-size: 32px;
   font-weight: 700;
   white-space: nowrap;
@@ -718,7 +748,7 @@ const InfoContainer = styled.div`
   position: relative;
   align-items: center;
   justify-content: center;
-  width: 70%;
+  width: 85%;
   padding: 30px;
 
   @media (max-width: 1280px) {
@@ -983,6 +1013,7 @@ const QuizSection1 = styled.div`
   font-weight: 700;
   color: #060710;
   align-self: center;
+  width: 100%;
   font-family: "Quattrocento", sans-serif;
   @media (max-width: 1280px) {
     width: 90%;

@@ -53,30 +53,23 @@ const ProgressGraph = () => {
         setChartData({
           labels: chartLabels,
           datasets: [
-            ...categories.map((category) => ({
+            ...categories.map((category) => {
+              const cusColor = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.7)`
+              return {
               label: category,
               data: categoryProgress[category],
-              borderColor: `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.7)`,
-              backgroundColor: (context) => {
-                const chart = context.chart;
-                const { ctx, chartArea } = chart;
-
-                if (!chartArea) {
-                  return null;
-                }
-                const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-                gradient.addColorStop(0, 'rgba(255, 0, 0, 0.3)');
-                gradient.addColorStop(1, 'rgba(255, 0, 0, 0.1)');
-                return gradient;
-              },
+              borderColor: cusColor,
+              backgroundColor: cusColor.replace("0.7","0.2"),
+              borderWidth: 1,
               fill: true,
               cubicInterpolationMode: 'monotone',
               spanGaps: true, // Enable spanning of gaps
-            })),
+            }}),
             {
               label: 'Overall Progress',
               data: overallProgress,
               borderColor: 'rgba(0, 0, 0, 1)',
+              borderWidth: 2,
               backgroundColor: (context) => {
                 const chart = context.chart;
                 const { ctx, chartArea } = chart;

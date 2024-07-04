@@ -10,13 +10,13 @@ const Button = styled.button`
   border-radius: 16px;
   background: linear-gradient(100deg, #9181f4 -5.85%, #5038ed 109.55%);
   box-shadow: 0px 8px 21px 0px rgba(0, 0, 0, 0.16);
-  margin-top: 22px;
+  margin: 5px;
   width: 235px;
   max-width: 100%;
   color: #fff;
   text-align: center;
   justify-content: center;
-  padding: 22px 60px;
+  padding: 20px 60px;
   font-weight: 700;
   font-size: 12px;
   font-family: Poppins, sans-serif;
@@ -70,7 +70,7 @@ const ExamButton = styled.button`
   color: ${({ selected }) => (selected ? "#fff" : "#000")};
   font-family: Poppins, sans-serif;
   margin: 10px;
-  padding: 22px 30px;
+  padding: 20px 30px;
   cursor: pointer;
   @media (max-width: 991px) {
     padding: 22px 20px;
@@ -116,6 +116,8 @@ const Main = styled.div`
 
 const InfoText = styled.p`
   color: #525252;
+  size: 16px;
+  font-weight:700;
   font-family: Poppins, sans-serif;
 `;
 
@@ -152,6 +154,8 @@ function PersonlizeProfile({ onClose }) {
   };
 
   const updateExam = async () => {
+    if(selectedExam === "") alert("Please Select an Exam");
+    else {
     try {
       const userUID = user?.uid;
       const examValue =
@@ -175,6 +179,7 @@ function PersonlizeProfile({ onClose }) {
     } catch (error) {
       console.error("Error updating user profile:", error);
     }
+    };
   };
 
 
